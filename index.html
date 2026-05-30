@@ -368,6 +368,9 @@
     .success-screen p{color:rgba(16,32,51,.64) !important;}
     .check{background:rgba(25,169,108,.12) !important;border-color:rgba(25,169,108,.35) !important;color:var(--ok) !important;}
 
+    .pac-container{z-index:99999 !important;direction:rtl;text-align:right;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;}
+    .pac-item{text-align:right;padding:9px 12px;}
+
 </style>
 </head>
 <body>
@@ -415,6 +418,7 @@
   <script>
     const $ = s => document.querySelector(s);
     const VEHICLE_API_URL = 'https://vehicle-api-81941134785.us-central1.run.app/vehicle';
+    const GOOGLE_MAPS_API_KEY = 'AIzaSyCAxMKUWT0raBOsotHR8-dp3zmmrOjqiL8';
     const state = { plate:'', vehicleApproved:false, vehicle:{make:'',model:'',year:'',licenseExpiry:'',licenseValid:false}, address:{city:'',street:'',house:''}, date:'', time:'', name:'', phone:'', notes:'', docs:{license:false,insurance:false,id:false}, payment:'', price:'₪349' };
     let step = 0, currentMonth = new Date();
     const modal = $('#modalShell'), content = $('#modalContent'), bar = $('#bar'), plateInput = $('#plateInput'), bookBtn = $('#bookBtn');
@@ -509,13 +513,14 @@
         <h2>מאיפה לקחת את הרכב?</h2>
         <p class="hint">ניתן לזהות מיקום או למלא ידנית. מספר בית תמיד מוקלד ידנית.</p>
         <div class="grid">
-          <button class="option" onclick="detectLocation()"><i>📍</i><span><strong>זהה את המיקום שלי</strong><small>זיהוי עיר ורחוב בלבד</small></span></button>
-          <button class="option" onclick="manualAddress()"><i>⌕</i><span><strong>מילוי כתובת ידני</strong><small>השלמה מקצועית בסגנון Google Maps</small></span></button>
+          <button class="option" onclick="detectLocation()"><i>📍</i><span><strong>זהה את המיקום שלי</strong><small>GPS + Google לזיהוי עיר ורחוב</small></span></button>
+          <button class="option" onclick="manualAddress()"><i>⌕</i><span><strong>מילוי כתובת ידני</strong><small>השלמת כתובות של Google</small></span></button>
         </div>
         <div class="fields" id="addressFields"></div>`, 20);
     }
-    function renderAddressFields(){
+    function renderAddressFields(withGoogleSearch = false){
       $('#addressFields').innerHTML = `
+        ${withGoogleSearch ? '<input class="field" id="addressSearch" placeholder="חיפוש כתובת בגוגל" autocomplete="off">' : ''}
         <input class="field" id="city" placeholder="עיר" value="${state.address.city}">
         <input class="field" id="street" placeholder="רחוב" value="${state.address.street}">
         <input class="field" id="house" inputmode="numeric" placeholder="מספר בית - חובה" value="${state.address.house}">
@@ -542,32 +547,84 @@
       if(err.code === 3) return 'זיהוי המיקום לקח יותר מדי זמן. אפשר לנסות שוב או למלא ידנית.';
       return 'לא הצלחנו לזהות מיקום. אפשר למלא כתובת ידנית.';
     }
-    function pickAddressParts(address){
-      const city = address.city || address.town || address.village || address.municipality || address.city_district || address.county || '';
-      const street = address.road || address.pedestrian || address.residential || address.neighbourhood || address.suburb || '';
-      return { city, street };
+    let googleMapsPromise = null;
+
+    function hasGoogleMapsKey(){
+      return GOOGLE_MAPS_API_KEY && !GOOGLE_MAPS_API_KEY.includes('AIzaSyCAxMKUWT0raBOsotHR8-dp3zmmrOjqiL8');
     }
+
+    function loadGoogleMaps(){
+      if(window.google && google.maps && google.maps.Geocoder && google.maps.places) return Promise.resolve();
+      if(!hasGoogleMapsKey()) return Promise.reject(new Error('missing_google_maps_key'));
+      if(googleMapsPromise) return googleMapsPromise;
+
+      googleMapsPromise = new Promise((resolve,reject)=>{
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}&libraries=places&language=he&region=IL&v=weekly`;
+        script.async = true;
+        script.defer = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('google_maps_load_failed'));
+        document.head.appendChild(script);
+      });
+
+      return googleMapsPromise;
+    }
+
+    function googleErrorText(err){
+      if(err && err.message === 'missing_google_maps_key') return 'חסר Google API Key בקובץ. יש להדביק אותו במקום AIzaSyCAxMKUWT0raBOsotHR8-dp3zmmrOjqiL8.';
+      return 'לא הצלחנו להתחבר לשירותי המיקום של Google. אפשר למלא כתובת ידנית.';
+    }
+
+    function getGoogleAddressParts(result){
+      const comps = result?.address_components || [];
+      const get = types => (comps.find(c => types.some(t => c.types.includes(t))) || {}).long_name || '';
+      return {
+        city: get(['locality','postal_town','administrative_area_level_3','administrative_area_level_2','administrative_area_level_1']),
+        street: get(['route'])
+      };
+    }
+
     async function reverseGeocode(lat,lng){
-      if(window.google && google.maps && google.maps.Geocoder){
-        const geocoder = new google.maps.Geocoder();
-        const result = await new Promise((resolve,reject)=>{
-          geocoder.geocode({ location:{ lat, lng }, language:'he' }, (results,status)=>{
-            if(status === 'OK' && results && results[0]) resolve(results[0]); else reject(new Error(status));
-          });
+      await loadGoogleMaps();
+      const geocoder = new google.maps.Geocoder();
+      const result = await new Promise((resolve,reject)=>{
+        geocoder.geocode({ location:{ lat, lng }, language:'he', region:'IL' }, (results,status)=>{
+          if(status === 'OK' && results && results[0]) resolve(results[0]); else reject(new Error(status));
         });
-        const comps = result.address_components || [];
-        const get = types => (comps.find(c => types.some(t => c.types.includes(t))) || {}).long_name || '';
-        return {
-          city: get(['locality','postal_town','administrative_area_level_2','administrative_area_level_1']),
-          street: get(['route'])
-        };
-      }
-      const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&addressdetails=1&accept-language=he`;
-      const res = await fetch(url, { headers:{ 'Accept':'application/json' } });
-      if(!res.ok) throw new Error('reverse geocode failed');
-      const data = await res.json();
-      return pickAddressParts(data.address || {});
+      });
+      return getGoogleAddressParts(result);
     }
+
+    async function initGooglePlacesAutocomplete(){
+      const searchInput = $('#addressSearch');
+      if(!searchInput) return;
+      try{
+        await loadGoogleMaps();
+        const autocomplete = new google.maps.places.Autocomplete(searchInput, {
+          componentRestrictions: { country: 'il' },
+          fields: ['address_components','formatted_address','geometry'],
+          types: ['address']
+        });
+
+        autocomplete.addListener('place_changed', () => {
+          const place = autocomplete.getPlace();
+          const parts = getGoogleAddressParts(place);
+          state.address.city = parts.city || state.address.city || '';
+          state.address.street = parts.street || state.address.street || '';
+          state.address.house = '';
+          const cityEl = $('#city');
+          const streetEl = $('#street');
+          const houseEl = $('#house');
+          if(cityEl) cityEl.value = state.address.city;
+          if(streetEl) streetEl.value = state.address.street;
+          if(houseEl) houseEl.focus();
+        });
+      }catch(err){
+        alert(googleErrorText(err));
+      }
+    }
+
     async function detectLocation(){
       if(!navigator.geolocation){
         alert('הדפדפן לא תומך בזיהוי מיקום. נא למלא כתובת ידנית.');
@@ -588,11 +645,11 @@
           alert('זוהה מיקום, אבל לא הצלחנו להשלים עיר ורחוב בצורה מלאה. נא להשלים ידנית.');
         }
       }catch(err){
-        alert(locationErrorText(err));
+        alert(err && (err.message === 'missing_google_maps_key' || err.message === 'google_maps_load_failed') ? googleErrorText(err) : locationErrorText(err));
         manualAddress();
       }
     }
-    function manualAddress(){ state.address.city=''; state.address.street=''; renderAddressFields(); setTimeout(()=>$('#city')?.focus(),50); }
+    function manualAddress(){ state.address.city=''; state.address.street=''; state.address.house=''; renderAddressFields(true); initGooglePlacesAutocomplete(); setTimeout(()=>$('#addressSearch')?.focus(),50); }
     function saveAddress(){ state.address.city=$('#city').value.trim(); state.address.street=$('#street').value.trim(); state.address.house=$('#house').value.trim(); if(!state.address.city || !state.address.street || !state.address.house) return alert('נא למלא עיר, רחוב ומספר בית'); openStep(2); }
 
     function dateStep(){ renderCalendar(); }
