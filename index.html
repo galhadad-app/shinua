@@ -46,6 +46,8 @@
     #plateInput{min-width:0;width:100%;height:100%;border:0;background:transparent;text-align:center;font-size:clamp(30px,8vw,40px);font-weight:900;letter-spacing:.04em;color:#111;outline:0;padding:0 10px;text-transform:uppercase;direction:ltr}
     .cta{width:100%;height:58px;margin-top:18px;border-radius:18px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#03151d;font-weight:850;font-size:18px;box-shadow:0 18px 50px rgba(124,232,212,.24);transform:translateY(10px);opacity:0;pointer-events:none;transition:.35s ease}
     .cta.show{transform:translateY(0);opacity:1;pointer-events:auto}
+
+    .cta:disabled,.btn:disabled{opacity:.72;cursor:wait;filter:saturate(.85);}
     .modal-shell{position:absolute;inset:0;z-index:10;display:none;align-items:flex-end;justify-content:center;background:rgba(2,7,13,.42);backdrop-filter:blur(14px);padding:14px}
     .modal-shell.active{display:flex;animation:fade .25s ease both}
     @keyframes fade{from{opacity:0}to{opacity:1}}
@@ -412,7 +414,8 @@
 
   <script>
     const $ = s => document.querySelector(s);
-    const state = { plate:'', vehicleApproved:false, vehicle:{type:'פרטי',make:'יונדאי',model:'i20',year:'2021',licenseExpiry:'15/09/2026',licenseValid:true}, address:{city:'',street:'',house:''}, date:'', time:'', name:'', phone:'', notes:'', docs:{license:false,insurance:false,id:false}, payment:'', price:'₪349' };
+    const VEHICLE_API_URL = 'https://vehicle-api-81941134785.us-central1.run.app/vehicle';
+    const state = { plate:'', vehicleApproved:false, vehicle:{make:'',model:'',year:'',licenseExpiry:'',licenseValid:false}, address:{city:'',street:'',house:''}, date:'', time:'', name:'', phone:'', notes:'', docs:{license:false,insurance:false,id:false}, payment:'', price:'₪349' };
     let step = 0, currentMonth = new Date();
     const modal = $('#modalShell'), content = $('#modalContent'), bar = $('#bar'), plateInput = $('#plateInput'), bookBtn = $('#bookBtn');
 
@@ -435,13 +438,43 @@
         bookBtn.classList.remove('show');
       }
     });
-    bookBtn.onclick = () => {
+    bookBtn.onclick = async () => {
       if(state.vehicleApproved) return openStep(1);
       const d = digitsOnly(plateInput.value);
       if(!validPlate(d)) return;
       state.plate = plateInput.value;
-      showVehicleConfirm();
+      await loadVehicleData(d);
     };
+
+    async function loadVehicleData(plateDigits){
+      const originalText = bookBtn.textContent;
+      bookBtn.disabled = true;
+      bookBtn.textContent = 'בודק את הרכב...';
+
+      try{
+        const response = await fetch(`${VEHICLE_API_URL}?plate=${encodeURIComponent(plateDigits)}`);
+        const data = await response.json();
+
+        if(!response.ok || !data.ok){
+          throw new Error(data.error || 'vehicle_not_found');
+        }
+
+        state.vehicle = {
+          make: data.make || '',
+          model: data.model || '',
+          year: data.year || '',
+          licenseExpiry: data.licenseExpiry || '',
+          licenseValid: Boolean(data.licenseValid)
+        };
+
+        showVehicleConfirm();
+      }catch(err){
+        alert('לא נמצאו פרטי רכב למספר שהוזן. נא לבדוק את המספר ולנסות שוב.');
+      }finally{
+        bookBtn.disabled = false;
+        bookBtn.textContent = originalText;
+      }
+    }
 
     function setProgress(n){ bar.style.width = Math.max(8, Math.min(100, n)) + '%'; }
     function openModal(html, progress){ content.innerHTML = html; setProgress(progress); modal.classList.add('active'); }
@@ -455,10 +488,10 @@
           <div class="mini-plate">${state.plate}</div>
 
           <div class="vehicle-minimal-details">
-            <div class="vehicle-main-line">${state.vehicle.type} ${state.vehicle.make} ${state.vehicle.model} • ${state.vehicle.year}</div>
+            <div class="vehicle-main-line">${state.vehicle.make} ${state.vehicle.model} • ${state.vehicle.year}</div>
             <div class="vehicle-license-line">
-              <span>תוקף רשיון</span>
-              <span class="vehicle-license-date ${state.vehicle.licenseValid ? 'valid' : 'invalid'}">${state.vehicle.licenseExpiry || 'ייבדק בהמשך'}</span>
+              <span>תוקף רישיון:</span>
+              <span class="vehicle-license-date ${state.vehicle.licenseValid ? 'valid' : 'invalid'}">${state.vehicle.licenseExpiry || 'לא נמצא'}</span>
             </div>
           </div>
         </div>
