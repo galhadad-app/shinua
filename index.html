@@ -521,7 +521,77 @@
         <input class="field" id="house" inputmode="numeric" placeholder="מספר בית - חובה" value="${state.address.house}">
         <button class="btn primary" onclick="saveAddress()">אישור כתובת</button>`;
     }
-    function detectLocation(){ state.address.city='תל אביב-יפו'; state.address.street='דרך מנחם בגין'; renderAddressFields(); }
+    function setAddressLoading(text){
+      const box = $('#addressFields');
+      if(!box) return;
+      box.innerHTML = `
+        <div class="vehicle-card" style="margin:0;text-align:center">
+          <strong>${text}</strong>
+          <div class="hint" style="margin:8px 0 0">לאחר הזיהוי יש להשלים מספר בית ידנית.</div>
+        </div>`;
+    }
+    function getPosition(){
+      return new Promise((resolve,reject)=>{
+        navigator.geolocation.getCurrentPosition(resolve,reject,{ enableHighAccuracy:true, timeout:14000, maximumAge:60000 });
+      });
+    }
+    function locationErrorText(err){
+      if(!err) return 'לא הצלחנו לזהות מיקום. אפשר למלא כתובת ידנית.';
+      if(err.code === 1) return 'לא ניתנה הרשאת מיקום. אפשר לאשר הרשאה בדפדפן או למלא ידנית.';
+      if(err.code === 2) return 'המיקום לא זמין כרגע. אפשר למלא כתובת ידנית.';
+      if(err.code === 3) return 'זיהוי המיקום לקח יותר מדי זמן. אפשר לנסות שוב או למלא ידנית.';
+      return 'לא הצלחנו לזהות מיקום. אפשר למלא כתובת ידנית.';
+    }
+    function pickAddressParts(address){
+      const city = address.city || address.town || address.village || address.municipality || address.city_district || address.county || '';
+      const street = address.road || address.pedestrian || address.residential || address.neighbourhood || address.suburb || '';
+      return { city, street };
+    }
+    async function reverseGeocode(lat,lng){
+      if(window.google && google.maps && google.maps.Geocoder){
+        const geocoder = new google.maps.Geocoder();
+        const result = await new Promise((resolve,reject)=>{
+          geocoder.geocode({ location:{ lat, lng }, language:'he' }, (results,status)=>{
+            if(status === 'OK' && results && results[0]) resolve(results[0]); else reject(new Error(status));
+          });
+        });
+        const comps = result.address_components || [];
+        const get = types => (comps.find(c => types.some(t => c.types.includes(t))) || {}).long_name || '';
+        return {
+          city: get(['locality','postal_town','administrative_area_level_2','administrative_area_level_1']),
+          street: get(['route'])
+        };
+      }
+      const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&addressdetails=1&accept-language=he`;
+      const res = await fetch(url, { headers:{ 'Accept':'application/json' } });
+      if(!res.ok) throw new Error('reverse geocode failed');
+      const data = await res.json();
+      return pickAddressParts(data.address || {});
+    }
+    async function detectLocation(){
+      if(!navigator.geolocation){
+        alert('הדפדפן לא תומך בזיהוי מיקום. נא למלא כתובת ידנית.');
+        manualAddress();
+        return;
+      }
+      setAddressLoading('מזהה את המיקום שלך...');
+      try{
+        const pos = await getPosition();
+        setAddressLoading('מצאנו מיקום, ממירים לעיר ורחוב...');
+        const parts = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+        state.address.city = parts.city || '';
+        state.address.street = parts.street || '';
+        state.address.house = '';
+        renderAddressFields();
+        setTimeout(()=>$('#house')?.focus(),80);
+        if(!state.address.city || !state.address.street){
+          alert('זוהה מיקום, אבל לא הצלחנו להשלים עיר ורחוב בצורה מלאה. נא להשלים ידנית.');
+        }
+      }catch(err){
+        alert(locationErrorText(err));
+        manualAddress();
+      }
+    }
     function manualAddress(){ state.address.city=''; state.address.street=''; renderAddressFields(); setTimeout(()=>$('#city')?.focus(),50); }
     function saveAddress(){ state.address.city=$('#city').value.trim(); state.address.street=$('#street').value.trim(); state.address.house=$('#house').value.trim(); if(!state.address.city || !state.address.street || !state.address.house) return alert('נא למלא עיר, רחוב ומספר בית'); openStep(2); }
 
