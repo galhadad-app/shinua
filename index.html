@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#07131d" />
+  <meta name="theme-color" content="#eef8fb" />
   <title>שינוע רכבים לטסט</title>
   <style>
     :root{
@@ -277,6 +277,95 @@
   display:block;
 }
 
+
+    /* Day mode only override */
+    :root{
+      --bg:#eef8fb;
+      --text:#102033;
+      --muted:rgba(16,32,51,.68);
+      --soft:rgba(16,32,51,.08);
+      --glass:rgba(255,255,255,.72);
+      --glass2:rgba(255,255,255,.9);
+      --line:rgba(16,32,51,.13);
+      --accent:#21c7b1;
+      --accent2:#69aef7;
+      --gold:#c7a14f;
+      --danger:#d94e4e;
+      --ok:#19a96c;
+      --shadow:0 24px 70px rgba(30,65,90,.18);
+    }
+    html,body{background:#eef8fb;color:var(--text);}
+    .app{
+      background:
+        radial-gradient(circle at 18% 0%, rgba(33,199,177,.22), transparent 34%),
+        radial-gradient(circle at 84% 12%, rgba(105,174,247,.20), transparent 32%),
+        linear-gradient(180deg,#f7fcff 0%,#eaf7f9 100%) !important;
+      color:var(--text) !important;
+    }
+    .video-bg{
+      background-image:
+        linear-gradient(120deg,rgba(255,255,255,.72),rgba(238,248,251,.58)),
+        url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&q=80') !important;
+      filter:saturate(1.02) contrast(1.02) brightness(1.12) !important;
+      opacity:.86;
+    }
+    .video-bg:after{
+      background:linear-gradient(to bottom,rgba(255,255,255,.74),rgba(255,255,255,.38) 43%,rgba(238,248,251,.84)) !important;
+      backdrop-filter:blur(.5px) !important;
+    }
+    .brand-pill{
+      background:rgba(255,255,255,.74) !important;
+      border-color:rgba(16,32,51,.14) !important;
+      color:rgba(16,32,51,.76) !important;
+      box-shadow:0 12px 34px rgba(30,65,90,.10);
+    }
+    h1{color:#102033 !important;text-shadow:0 8px 28px rgba(255,255,255,.78),0 10px 34px rgba(30,65,90,.10) !important;}
+    .subtitle{color:rgba(16,32,51,.68) !important;}
+    .cta,.btn.primary,.day.selected{
+      background:linear-gradient(135deg,var(--accent),var(--accent2)) !important;
+      color:#ffffff !important;
+      box-shadow:0 18px 44px rgba(33,199,177,.22) !important;
+    }
+    .modal-shell{background:rgba(238,248,251,.52) !important;backdrop-filter:blur(14px) !important;}
+    .modal{
+      background:linear-gradient(150deg,rgba(255,255,255,.96),rgba(244,251,253,.90)) !important;
+      border:1px solid rgba(16,32,51,.12) !important;
+      color:#102033 !important;
+      box-shadow:0 28px 80px rgba(30,65,90,.22) !important;
+    }
+    .progress{background:rgba(16,32,51,.08) !important;}
+    .hint{color:rgba(16,32,51,.62) !important;}
+    .vehicle-card,.summary-card,.option,.field,.slot,.pay,.upload,.btn{
+      background:rgba(255,255,255,.78) !important;
+      border-color:rgba(16,32,51,.12) !important;
+      color:#102033 !important;
+      box-shadow:0 10px 28px rgba(30,65,90,.08);
+    }
+    .vehicle-card.premium-vehicle{
+      background:
+        radial-gradient(circle at 88% 12%, rgba(33,199,177,.12), transparent 34%),
+        linear-gradient(150deg, rgba(255,255,255,.95), rgba(244,251,253,.88)) !important;
+      border-color:rgba(16,32,51,.12) !important;
+      box-shadow:0 20px 58px rgba(30,65,90,.14), inset 0 1px 0 rgba(255,255,255,.72) !important;
+    }
+    .vehicle-main-line{color:#102033 !important;}
+    .vehicle-license-line,.info-row span,.option small,.upload small{color:rgba(16,32,51,.62) !important;}
+    .info-row{border-bottom-color:rgba(16,32,51,.08) !important;}
+    .field::placeholder,textarea::placeholder{color:rgba(16,32,51,.42) !important;}
+    .option i,.upload .uicon,.car-icon{background:rgba(33,199,177,.10) !important;color:#102033 !important;}
+    .week{color:rgba(16,32,51,.48) !important;}
+    .day{background:rgba(255,255,255,.82) !important;color:#102033 !important;border:1px solid rgba(16,32,51,.08);}
+    .day.selected{color:#fff !important;}
+    .slot.active,.pay.active,.btn.active{background:rgba(33,199,177,.14) !important;border-color:rgba(33,199,177,.55) !important;}
+    .btn.danger{background:rgba(217,78,78,.10) !important;border-color:rgba(217,78,78,.24) !important;color:#b73535 !important;}
+    .upload.done{border-color:rgba(25,169,108,.52) !important;background:rgba(25,169,108,.10) !important;}
+    .success-screen{
+      background:radial-gradient(circle at 50% 18%,rgba(25,169,108,.17),transparent 35%),linear-gradient(180deg,#f7fcff,#eaf7f9) !important;
+      color:#102033 !important;
+    }
+    .success-screen p{color:rgba(16,32,51,.64) !important;}
+    .check{background:rgba(25,169,108,.12) !important;border-color:rgba(25,169,108,.35) !important;color:var(--ok) !important;}
+
 </style>
 </head>
 <body>
@@ -296,7 +385,7 @@
     </section>
 
 <div class="home-icons">
-  <img src="icons.png" alt="אייקונים">
+  <img src="file_00000000a0d4720ab3ee5b14fffc4fb6.png" alt="אייקונים">
 </div>
 
 
