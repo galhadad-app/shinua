@@ -419,7 +419,7 @@
     const $ = s => document.querySelector(s);
     const VEHICLE_API_URL = 'https://vehicle-api-81941134785.us-central1.run.app/vehicle';
     const GOOGLE_MAPS_API_KEY = 'AIzaSyCAxMKUWT0raBOsotHR8-dp3zmmrOjqiL8';
-    const state = { plate:'', vehicleApproved:false, vehicle:{make:'',model:'',year:'',licenseExpiry:'',licenseValid:false}, address:{city:'',street:'',house:''}, date:'', time:'', name:'', phone:'', notes:'', docs:{license:false,insurance:false,id:false}, payment:'', price:'₪349' };
+    const state = { plate:'', vehicleApproved:false, vehicle:{make:'',model:'',year:'',licenseExpiry:'',licenseValid:false}, address:{city:'',street:'',house:'',formatted:''}, date:'', time:'', name:'', phone:'', notes:'', docs:{license:false,insurance:false,id:false}, payment:'', price:'₪349' };
     let step = 0, currentMonth = new Date();
     const modal = $('#modalShell'), content = $('#modalContent'), bar = $('#bar'), plateInput = $('#plateInput'), bookBtn = $('#bookBtn');
 
@@ -511,18 +511,29 @@
     function pickupStep(){
       openModal(`
         <h2>מאיפה לקחת את הרכב?</h2>
-        <p class="hint">ניתן לזהות מיקום או למלא ידנית. מספר בית תמיד מוקלד ידנית.</p>
+        <p class="hint">ניתן לזהות מיקום או לחפש כתובת בגוגל. מספר בית תמיד מוקלד ידנית.</p>
         <div class="grid">
           <button class="option" onclick="detectLocation()"><i>📍</i><span><strong>זהה את המיקום שלי</strong><small>GPS + Google לזיהוי עיר ורחוב</small></span></button>
-          <button class="option" onclick="manualAddress()"><i>⌕</i><span><strong>מילוי כתובת ידני</strong><small>השלמת כתובות של Google</small></span></button>
+          <button class="option" onclick="manualAddress()"><i>⌕</i><span><strong>חפש כתובת בגוגל</strong><small>חיפוש והשלמה אוטומטית של כתובת</small></span></button>
         </div>
         <div class="fields" id="addressFields"></div>`, 20);
     }
+    function selectedAddressText(){
+      const city = state.address.city || '';
+      const street = state.address.street || '';
+      const formatted = state.address.formatted || [street, city].filter(Boolean).join(', ');
+      return formatted || 'עדיין לא נבחרה כתובת';
+    }
+
     function renderAddressFields(withGoogleSearch = false){
+      const hasAddress = Boolean(state.address.city || state.address.street || state.address.formatted);
       $('#addressFields').innerHTML = `
-        ${withGoogleSearch ? '<input class="field" id="addressSearch" placeholder="חיפוש כתובת בגוגל" autocomplete="off">' : ''}
-        <input class="field" id="city" placeholder="עיר" value="${state.address.city}">
-        <input class="field" id="street" placeholder="רחוב" value="${state.address.street}">
+        ${withGoogleSearch ? '<input class="field" id="addressSearch" placeholder="חפש כתובת בגוגל" autocomplete="off">' : ''}
+        <div class="vehicle-card" style="margin:0;text-align:center">
+          <div class="hint" style="margin:0 0 7px">הכתובת שנבחרה:</div>
+          <strong>${selectedAddressText()}</strong>
+          ${hasAddress ? '<div class="hint" style="margin:7px 0 0">יש להשלים מספר בית ידנית.</div>' : '<div class="hint" style="margin:7px 0 0">בחר כתובת מהרשימה או זהה מיקום.</div>'}
+        </div>
         <input class="field" id="house" inputmode="numeric" placeholder="מספר בית - חובה" value="${state.address.house}">
         <button class="btn primary" onclick="saveAddress()">אישור כתובת</button>`;
     }
@@ -581,7 +592,9 @@
       const get = types => (comps.find(c => types.some(t => c.types.includes(t))) || {}).long_name || '';
       return {
         city: get(['locality','postal_town','administrative_area_level_3','administrative_area_level_2','administrative_area_level_1']),
-        street: get(['route'])
+        street: get(['route']),
+        house: get(['street_number']),
+        formatted: result?.formatted_address || ''
       };
     }
 
@@ -612,13 +625,11 @@
           const parts = getGoogleAddressParts(place);
           state.address.city = parts.city || state.address.city || '';
           state.address.street = parts.street || state.address.street || '';
-          state.address.house = '';
-          const cityEl = $('#city');
-          const streetEl = $('#street');
-          const houseEl = $('#house');
-          if(cityEl) cityEl.value = state.address.city;
-          if(streetEl) streetEl.value = state.address.street;
-          if(houseEl) houseEl.focus();
+          state.address.house = parts.house || '';
+          state.address.formatted = parts.formatted || [state.address.street, state.address.city].filter(Boolean).join(', ');
+          renderAddressFields(true);
+          initGooglePlacesAutocomplete();
+          setTimeout(()=>$('#house')?.focus(),80);
         });
       }catch(err){
         alert(googleErrorText(err));
@@ -639,6 +650,7 @@
         state.address.city = parts.city || '';
         state.address.street = parts.street || '';
         state.address.house = '';
+        state.address.formatted = [state.address.street, state.address.city].filter(Boolean).join(', ');
         renderAddressFields();
         setTimeout(()=>$('#house')?.focus(),80);
         if(!state.address.city || !state.address.street){
@@ -649,8 +661,8 @@
         manualAddress();
       }
     }
-    function manualAddress(){ state.address.city=''; state.address.street=''; state.address.house=''; renderAddressFields(true); initGooglePlacesAutocomplete(); setTimeout(()=>$('#addressSearch')?.focus(),50); }
-    function saveAddress(){ state.address.city=$('#city').value.trim(); state.address.street=$('#street').value.trim(); state.address.house=$('#house').value.trim(); if(!state.address.city || !state.address.street || !state.address.house) return alert('נא למלא עיר, רחוב ומספר בית'); openStep(2); }
+    function manualAddress(){ state.address.city=''; state.address.street=''; state.address.house=''; state.address.formatted=''; renderAddressFields(true); initGooglePlacesAutocomplete(); setTimeout(()=>$('#addressSearch')?.focus(),50); }
+    function saveAddress(){ state.address.house=$('#house').value.trim(); if(!state.address.city || !state.address.street) return alert('נא לבחור כתובת דרך זיהוי מיקום או חיפוש בגוגל'); if(!state.address.house) return alert('נא למלא מספר בית'); openStep(2); }
 
     function dateStep(){ renderCalendar(); }
     function renderCalendar(){
