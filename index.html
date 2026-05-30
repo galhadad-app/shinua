@@ -550,7 +550,7 @@
     let googleMapsPromise = null;
 
     function hasGoogleMapsKey(){
-      return GOOGLE_MAPS_API_KEY && !GOOGLE_MAPS_API_KEY.includes('AIzaSyCAxMKUWT0raBOsotHR8-dp3zmmrOjqiL8');
+      return Boolean(GOOGLE_MAPS_API_KEY && GOOGLE_MAPS_API_KEY.trim() && GOOGLE_MAPS_API_KEY !== 'YOUR_GOOGLE_API_KEY');
     }
 
     function loadGoogleMaps(){
@@ -572,7 +572,7 @@
     }
 
     function googleErrorText(err){
-      if(err && err.message === 'missing_google_maps_key') return 'חסר Google API Key בקובץ. יש להדביק אותו במקום AIzaSyCAxMKUWT0raBOsotHR8-dp3zmmrOjqiL8.';
+      if(err && err.message === 'missing_google_maps_key') return 'חסר Google API Key בקובץ. יש להדביק מפתח אמיתי במקום YOUR_GOOGLE_API_KEY.';
       return 'לא הצלחנו להתחבר לשירותי המיקום של Google. אפשר למלא כתובת ידנית.';
     }
 
