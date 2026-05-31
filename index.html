@@ -28,9 +28,9 @@
     button,input,textarea{font:inherit}
     button{border:0;cursor:pointer;color:inherit}
     .app{height:100%;position:relative;overflow:hidden;background:radial-gradient(circle at 20% 0%,rgba(124,232,212,.28),transparent 33%),radial-gradient(circle at 85% 15%,rgba(158,200,255,.22),transparent 30%),#07131d}
-    .video-bg{position:absolute;inset:0;background:url('background.jpg') center center/cover no-repeat;animation:driveZoom 20s ease-in-out infinite alternate;filter:none;transform-origin:center center}
+    .video-bg{position:absolute;inset:0;background:url('background.jpg') center center/cover no-repeat;animation:none;filter:none}
     .video-bg:after{display:none}
-    @keyframes driveZoom{0%{transform:scale(1)}100%{transform:scale(1.10)}}
+    @keyframes cinema{0%{transform:none}100%{transform:none}}
     .home{height:100%;position:relative;z-index:1;display:flex;align-items:center;justify-content:center;padding:26px;text-align:center}
     .home-inner{width:min(100%,430px);animation:floatIn .8s ease both}
     @keyframes floatIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
