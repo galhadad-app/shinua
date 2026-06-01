@@ -60,7 +60,23 @@
     .actions{display:grid;gap:10px}.btn{height:56px;border-radius:18px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.16);font-weight:800;font-size:16px;transition:.2s ease}.btn:active{transform:scale(.98)}.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04141d}.btn.danger{background:rgba(255,131,127,.14);border-color:rgba(255,131,127,.32);color:#ffd5d3}.btn.active{outline:2px solid rgba(124,232,212,.75);background:rgba(124,232,212,.18)}
     .option{display:flex;align-items:center;gap:13px;min-height:72px;padding:14px;border-radius:22px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);text-align:right}.option i{width:42px;height:42px;border-radius:16px;display:grid;place-items:center;background:rgba(255,255,255,.12);font-style:normal;font-size:21px}.option strong{display:block;font-size:16px}.option small{display:block;color:rgba(255,255,255,.62);margin-top:4px}
     .fields{display:grid;gap:10px;margin:12px 0}.field{height:54px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.1);border-radius:17px;color:#fff;outline:0;padding:0 15px;text-align:right}.field::placeholder,textarea::placeholder{color:rgba(255,255,255,.48)}textarea.field{height:84px;padding-top:14px;resize:none}
-    .calendar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.month-title{font-weight:850}.navbtn{width:40px;height:40px;border-radius:14px;background:rgba(255,255,255,.12)}.week,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;text-align:center}.week{color:rgba(255,255,255,.55);font-size:12px;margin-bottom:8px}.day{height:43px;border-radius:15px;background:rgba(255,255,255,.09);display:grid;place-items:center;font-weight:760}.day.disabled{opacity:.25}.day.selected{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04141d}
+    .calendar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.month-title{font-weight:850}.navbtn{width:40px;height:40px;border-radius:14px;background:rgba(255,255,255,.12)}.week,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;text-align:center}.week{color:rgba(255,255,255,.55);font-size:12px;margin-bottom:8px}.day{
+      width:44px;
+      height:44px;
+      margin:auto;
+      border-radius:999px;
+      background:transparent;
+      display:grid;
+      place-items:center;
+      font-weight:850;
+      border:0;
+      box-shadow:none;
+    }
+    .day.disabled{opacity:.25}
+    .day.selected{
+      background:#102033;
+      color:#fff;
+    }
     .slots,.payments{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.slot,.pay{height:58px;border-radius:18px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);font-weight:850}.slot.active,.pay.active{background:linear-gradient(135deg,rgba(124,232,212,.3),rgba(158,200,255,.22));border-color:rgba(124,232,212,.7)}
     .upload{position:relative;display:flex;align-items:center;gap:13px;min-height:74px;padding:14px;border-radius:21px;background:rgba(255,255,255,.1);border:1px dashed rgba(255,255,255,.28);overflow:hidden}.upload input{position:absolute;inset:0;opacity:0}.upload .uicon{width:44px;height:44px;border-radius:16px;background:rgba(255,255,255,.12);display:grid;place-items:center}.upload.done{border-style:solid;border-color:rgba(79,229,155,.65);background:rgba(79,229,155,.13)}.upload.done .uicon{background:rgba(79,229,155,.22)}.upload small{color:rgba(255,255,255,.58)}
     .success-screen{position:absolute;inset:0;z-index:20;display:none;align-items:center;justify-content:center;padding:24px;text-align:center;background:radial-gradient(circle at 50% 18%,rgba(79,229,155,.24),transparent 35%),linear-gradient(180deg,#07131d,#091927)}.success-screen.active{display:flex}.check{width:94px;height:94px;border-radius:50%;margin:0 auto 24px;display:grid;place-items:center;background:rgba(79,229,155,.16);border:1px solid rgba(79,229,155,.45);font-size:46px;color:var(--ok);box-shadow:0 0 48px rgba(79,229,155,.2);animation:pulse 2s ease infinite}@keyframes pulse{50%{transform:scale(1.05);box-shadow:0 0 70px rgba(79,229,155,.32)}}
@@ -721,13 +737,16 @@
         days += `<button class="day ${disabled?'disabled':''} ${state.date===iso?'selected':''}" ${disabled?'disabled':''} onclick="selectDate('${iso}')">${d}</button>`;
       }
       openModal(`
-        <h2>באיזה תאריך?</h2>
+        <h2>בתאריך?</h2>
         <div class="calendar-head"><button class="navbtn" onclick="moveMonth(1)">‹</button><div class="month-title">${currentMonth.toLocaleDateString('he-IL',{month:'long',year:'numeric'})}</div><button class="navbtn" onclick="moveMonth(-1)">›</button></div>
         <div class="week">${names.map(n=>`<div>${n}</div>`).join('')}</div>
-        <div class="days">${days}</div>`, 36);
+        <div class="days">${days}</div>
+        ${state.date ? `<div style="margin-top:18px;text-align:center;font-weight:800;color:#102033">התאריך שנבחר: ${new Date(state.date).toLocaleDateString('he-IL',{day:'numeric',month:'long',year:'numeric'})}</div>
+        <div class="actions" style="margin-top:14px"><button class="btn primary" onclick="openStep(3)">המשך לבחירת שעה</button></div>` : ''}
+        `, 36);
     }
     function moveMonth(delta){ currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth()+delta, 1); renderCalendar(); }
-    function selectDate(iso){ state.date = iso; openStep(3); }
+    function selectDate(iso){ state.date = iso; renderCalendar(); }
 
     function timeStep(){
       const times = ['08:00','09:30','11:00','12:30','14:00','15:30'];
