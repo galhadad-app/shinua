@@ -54,7 +54,7 @@
     .modal{width:min(100%,460px);max-height:88vh;overflow:auto;border-radius:32px;background:linear-gradient(150deg,rgba(255,255,255,.18),rgba(255,255,255,.08));border:1px solid rgba(255,255,255,.22);box-shadow:var(--shadow);backdrop-filter:blur(26px);padding:20px;animation:sheet .38s cubic-bezier(.2,.9,.2,1) both;color:#fff}
     @keyframes sheet{from{opacity:0;transform:translateY(34px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
     .progress{height:5px;background:rgba(255,255,255,.13);border-radius:99px;overflow:hidden;margin-bottom:18px}.bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:.4s ease}
-    .modal h2{font-size:25px;margin:0 0 16px;letter-spacing:-.03em}.hint{margin:-5px 0 17px;color:rgba(255,255,255,.68);font-size:14px;line-height:1.45}
+    .modal h2{font-size:25px;margin:0 0 16px;letter-spacing:-.03em;text-align:center}.hint{margin:-5px 0 17px;color:rgba(255,255,255,.68);font-size:14px;line-height:1.45;text-align:center}
     .vehicle-card,.summary-card{border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.1);border-radius:24px;padding:16px;margin-bottom:16px}.car-icon{width:58px;height:58px;border-radius:20px;display:grid;place-items:center;background:linear-gradient(135deg,rgba(124,232,212,.24),rgba(158,200,255,.18));font-size:30px;margin-bottom:12px}
     .grid{display:grid;gap:10px}.info-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.09)}.info-row:last-child{border-bottom:0}.info-row span{color:rgba(255,255,255,.64);font-size:14px}.info-row b{font-size:15px;text-align:left;direction:rtl}
     .actions{display:grid;gap:10px}.btn{height:56px;border-radius:18px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.16);font-weight:800;font-size:16px;transition:.2s ease}.btn:active{transform:scale(.98)}.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04141d}.btn.danger{background:rgba(255,131,127,.14);border-color:rgba(255,131,127,.32);color:#ffd5d3}.btn.active{outline:2px solid rgba(124,232,212,.75);background:rgba(124,232,212,.18)}
@@ -237,6 +237,32 @@
       letter-spacing:-.035em;
       color:#fff;
     }
+    .vehicle-model-line{
+      font-size:28px;
+      line-height:1.14;
+      font-weight:950;
+      letter-spacing:.01em;
+      color:#102033;
+      direction:ltr;
+      font-family:Arial Black, Impact, system-ui, sans-serif;
+    }
+    .vehicle-make-year-line{
+      margin-top:8px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      color:rgba(16,32,51,.72);
+      font-size:16px;
+      font-weight:800;
+      line-height:1.25;
+      flex-wrap:wrap;
+    }
+    .vehicle-make-year-line .dot{
+      color:rgba(16,32,51,.5);
+      font-weight:900;
+    }
+
     .vehicle-license-line{
       margin:8px auto 0;
       color:rgba(255,255,255,.66);
@@ -377,6 +403,12 @@
   display:block;
 }
 
+
+    .inline-address-search{display:none;width:100%;margin-top:8px;border:0;background:transparent;color:#102033;outline:0;font-weight:700;font-size:15px;text-align:right;padding:0;}
+    .inline-address-search::placeholder{color:rgba(16,32,51,.42);}
+    .address-search-option.searching .inline-address-search{display:block;}
+    .address-search-option.searching strong{display:none;}
+
 </style>
 </head>
 <body>
@@ -440,7 +472,7 @@
       e.target.value = formatPlate(d);
       state.plate = e.target.value;
       state.vehicleApproved = false;
-      bookBtn.textContent = 'זהה את הרכב';
+      bookBtn.textContent = 'המשך';
 
       if(validPlate(d)) {
         bookBtn.classList.add('show');
@@ -457,9 +489,9 @@
     };
 
     async function loadVehicleData(plateDigits){
-      const originalText = bookBtn.textContent;
+      const originalText = 'המשך';
       bookBtn.disabled = true;
-      bookBtn.textContent = 'בודק את הרכב...';
+      bookBtn.textContent = 'מזהה את הרכב...';
 
       try{
         const response = await fetch(`${VEHICLE_API_URL}?plate=${encodeURIComponent(plateDigits)}`);
@@ -492,13 +524,14 @@
 
     function showVehicleConfirm(){
       openModal(`
-        <h2>אישור פרטי הרכב</h2>
-        <p class="hint">נא לוודא שהפרטים תואמים לרכב לפני המשך ההזמנה.</p>
+        <h2>הרכב זוהה בהצלחה</h2>
+        <p class="hint">אשר את פרטי הרכב ונמשיך לבחירת כתובת איסוף</p>
         <div class="vehicle-card premium-vehicle">
           <div class="mini-plate">${state.plate}</div>
 
           <div class="vehicle-minimal-details">
-            <div class="vehicle-main-line">${state.vehicle.make} ${state.vehicle.model} • ${state.vehicle.year}</div>
+            <div class="vehicle-model-line">${state.vehicle.model || ''}</div>
+            <div class="vehicle-make-year-line"><span>${state.vehicle.make || ''}</span><span class="dot">•</span><span>שנת ${state.vehicle.year || ''}</span></div>
             <div class="vehicle-license-line">
               <span>תוקף רישיון:</span>
               <span class="vehicle-license-date ${state.vehicle.licenseValid ? 'valid' : 'invalid'}">${state.vehicle.licenseExpiry || 'לא נמצא'}</span>
@@ -506,23 +539,23 @@
           </div>
         </div>
         <div class="actions">
-          <button class="btn primary" onclick="approveVehicle()">כן, זה הרכב שלי • הזמן שינוע!</button>
+          <button class="btn primary" onclick="approveVehicle()">כן, זה הרכב שלי!</button>
           <button class="btn danger" onclick="wrongPlate()">מספר שגוי</button>
         </div>`, 10);
     }
     function approveVehicle(){ closeModal(); state.vehicleApproved = true; bookBtn.classList.remove('show'); openStep(1); }
-    function wrongPlate(){ closeModal(); state.vehicleApproved = false; bookBtn.textContent = 'זהה את הרכב'; plateInput.focus(); plateInput.select(); bookBtn.classList.remove('show'); }
+    function wrongPlate(){ closeModal(); state.vehicleApproved = false; bookBtn.textContent = 'המשך'; plateInput.focus(); plateInput.select(); bookBtn.classList.remove('show'); }
 
     function openStep(n){ step = n; if(n===1) pickupStep(); if(n===2) dateStep(); if(n===3) timeStep(); if(n===4) detailsStep(); if(n===5) docsStep(); if(n===6) finalSummary(); if(n===7) paymentStep(); }
     function pickupStep(){
       openModal(`
-        <h2>מאיפה לקחת את הרכב?</h2>
-        <p class="hint">ניתן לזהות מיקום או לחפש כתובת בגוגל. מספר בית תמיד מוקלד ידנית.</p>
-        <div class="grid">
-          <button class="option" onclick="detectLocation()"><i>📍</i><span><strong>זהה את המיקום שלי</strong><small>GPS + Google לזיהוי עיר ורחוב</small></span></button>
-          <button class="option" onclick="manualAddress()"><i>⌕</i><span><strong>חפש כתובת בגוגל</strong><small>חיפוש והשלמה אוטומטית של כתובת</small></span></button>
+        <h2>כתובת לאיסוף הרכב</h2>
+        <div class="grid" id="pickupOptions">
+          <button class="option" onclick="detectLocation()"><i>📍</i><span><strong>זהה את המיקום שלי</strong></span></button>
+          <div class="option address-search-option" onclick="focusAddressSearch()"><i>⌕</i><span><strong>חפש כתובת</strong><input class="inline-address-search" id="addressSearch" placeholder="חפש כתובת" autocomplete="off" onclick="event.stopPropagation()"></span></div>
         </div>
         <div class="fields" id="addressFields"></div>`, 20);
+      initGooglePlacesAutocomplete();
     }
     function selectedAddressText(){
       const city = state.address.city || '';
@@ -534,7 +567,6 @@
     function renderAddressFields(withGoogleSearch = false){
       const hasAddress = Boolean(state.address.city || state.address.street || state.address.formatted);
       $('#addressFields').innerHTML = `
-        ${withGoogleSearch ? '<input class="field" id="addressSearch" placeholder="חפש כתובת בגוגל" autocomplete="off">' : ''}
         <div class="vehicle-card" style="margin:0;text-align:center">
           <div class="hint" style="margin:0 0 7px">הכתובת שנבחרה:</div>
           <strong>${selectedAddressText()}</strong>
@@ -667,7 +699,14 @@
         manualAddress();
       }
     }
-    function manualAddress(){ state.address.city=''; state.address.street=''; state.address.house=''; state.address.formatted=''; renderAddressFields(true); initGooglePlacesAutocomplete(); setTimeout(()=>$('#addressSearch')?.focus(),50); }
+
+    function focusAddressSearch(){
+      const option = document.querySelector('.address-search-option');
+      const input = $('#addressSearch');
+      if(option) option.classList.add('searching');
+      if(input){ initGooglePlacesAutocomplete(); setTimeout(()=>input.focus(),50); }
+    }
+    function manualAddress(){ state.address.city=''; state.address.street=''; state.address.house=''; state.address.formatted=''; focusAddressSearch(); }
     function saveAddress(){ state.address.house=$('#house').value.trim(); if(!state.address.city || !state.address.street) return alert('נא לבחור כתובת דרך זיהוי מיקום או חיפוש בגוגל'); if(!state.address.house) return alert('נא למלא מספר בית'); openStep(2); }
 
     function dateStep(){ renderCalendar(); }
