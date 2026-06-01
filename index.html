@@ -408,9 +408,13 @@
 
 
 .logo-top{
+  position:absolute;
+  top:20px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:50;
   display:flex;
   justify-content:center;
-  margin:-80 auto 18px;
 }
 .logo-top img{
   max-width:180px;
@@ -498,11 +502,11 @@ padding:8px 0;
 <body>
   <main class="app">
     <div class="video-bg" aria-hidden="true"></div>
-    <section class="home" id="home">
-      <div class="home-inner">
-        <div class="logo-top">
+    <div class="logo-top">
           <img src="logo.png" alt="לוגו">
         </div>
+    <section class="home" id="home">
+      <div class="home-inner">
         <div class="plate-wrap">
           <div class="plate-label">הזן מספר רכב</div>
           <input id="plateInput" class="plate-input" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="הקלד מספר רכב" />
