@@ -738,7 +738,7 @@
       }
       openModal(`
         <h2>בתאריך?</h2>
-        <div class="calendar-head"><button class="navbtn" onclick="moveMonth(1)">‹</button><div class="month-title">${currentMonth.toLocaleDateString('he-IL',{month:'long',year:'numeric'})}</div><button class="navbtn" onclick="moveMonth(-1)">›</button></div>
+        <div class="calendar-head"><button class="navbtn" onclick="moveMonth(-1)">‹</button><div class="month-title">${currentMonth.toLocaleDateString('he-IL',{month:'long',year:'numeric'})}</div><button class="navbtn" onclick="moveMonth(1)">›</button></div>
         <div class="week">${names.map(n=>`<div>${n}</div>`).join('')}</div>
         <div class="days">${days}</div>
         ${state.date ? `<div style="margin-top:18px;text-align:center;font-weight:800;color:#102033">התאריך שנבחר: ${new Date(state.date).toLocaleDateString('he-IL',{day:'numeric',month:'long',year:'numeric'})}</div>
