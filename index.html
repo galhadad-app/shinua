@@ -425,6 +425,60 @@
     .address-search-option.searching .inline-address-search{display:block;}
     .address-search-option.searching strong{display:none;}
 
+    /* Compact time tag picker */
+    .time-date-label{
+      margin:-8px 0 22px;
+      text-align:center;
+      color:rgba(16,32,51,.62);
+      font-size:16px;
+      font-weight:800;
+      line-height:1.3;
+    }
+    .time-tags{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:12px;
+      margin:0 auto 24px;
+      max-width:360px;
+      direction:ltr;
+    }
+    .time-tag{
+      min-width:108px;
+      height:52px;
+      border-radius:999px;
+      border:1px solid rgba(16,32,51,.12);
+      background:rgba(255,255,255,.86);
+      color:#102033;
+      font-size:21px;
+      font-weight:950;
+      direction:ltr;
+      box-shadow:0 10px 26px rgba(30,65,90,.08);
+      cursor:pointer;
+      transition:.18s ease;
+    }
+    .time-tag:active{transform:scale(.96);}
+    .time-tag.active{
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      color:#fff;
+      border-color:transparent;
+      box-shadow:0 16px 38px rgba(33,199,177,.24);
+    }
+    .time-pick-note{
+      margin:0 0 24px;
+      text-align:center;
+      color:rgba(16,32,51,.58);
+      font-size:16px;
+      font-weight:800;
+    }
+    .time-continue-wrap{
+      margin-top:6px;
+      display:none;
+    }
+    .time-continue-wrap.show{
+      display:grid;
+    }
+
 </style>
 </head>
 <body>
@@ -738,7 +792,7 @@
       }
       openModal(`
         <h2>בתאריך?</h2>
-        <div class="calendar-head"><button class="navbtn" onclick="moveMonth(-1)">‹</button><div class="month-title">${currentMonth.toLocaleDateString('he-IL',{month:'long',year:'numeric'})}</div><button class="navbtn" onclick="moveMonth(1)">›</button></div>
+        <div class="calendar-head"><button class="navbtn" onclick="moveMonth(1)">‹</button><div class="month-title">${currentMonth.toLocaleDateString('he-IL',{month:'long',year:'numeric'})}</div><button class="navbtn" onclick="moveMonth(-1)">›</button></div>
         <div class="week">${names.map(n=>`<div>${n}</div>`).join('')}</div>
         <div class="days">${days}</div>
         ${state.date ? `<div style="margin-top:18px;text-align:center;font-weight:800;color:#102033">התאריך שנבחר: ${new Date(state.date).toLocaleDateString('he-IL',{day:'numeric',month:'long',year:'numeric'})}</div>
@@ -750,9 +804,28 @@
 
     function timeStep(){
       const times = ['08:00','09:30','11:00','12:30','14:00','15:30'];
-      openModal(`<h2>באיזו שעה?</h2><p class="hint">הסלוטים מוצגים במרווחים של שעה וחצי.</p><div class="slots">${times.map(t=>`<button class="slot" onclick="selectTime('${t}')">${t}</button>`).join('')}</div>`, 52);
+      const selectedDateText = state.date
+        ? new Date(state.date).toLocaleDateString('he-IL',{weekday:'long',day:'numeric',month:'long'})
+        : '';
+      openModal(`
+        <h2>בחירת שעה</h2>
+        <div class="time-date-label">${selectedDateText}</div>
+        <div class="time-tags">
+          ${times.map(t=>`<button class="time-tag ${state.time===t?'active':''}" onclick="selectTime('${t}')">${t}</button>`).join('')}
+        </div>
+        <div class="time-pick-note">בחירת שעת איסוף מהרשימה</div>
+        <div class="time-continue-wrap ${state.time?'show':''}" id="timeContinueWrap">
+          <button class="btn primary" onclick="openStep(4)">המשך</button>
+        </div>`, 52);
     }
-    function selectTime(t){ state.time=t; openStep(4); }
+    function selectTime(t){
+      state.time=t;
+      document.querySelectorAll('.time-tag').forEach(btn=>{
+        btn.classList.toggle('active', btn.textContent.trim() === t);
+      });
+      const wrap = document.getElementById('timeContinueWrap');
+      if(wrap) wrap.classList.add('show');
+    }
 
     function detailsStep(){
       openModal(`<h2>מה הפרטים שלך?</h2><div class="fields"><input class="field" id="fullName" placeholder="שם מלא" autocomplete="name"><input class="field" id="phone" inputmode="tel" placeholder="פלאפון"><textarea class="field" id="notes" placeholder="הערות (לא חובה)"></textarea><button class="btn primary" onclick="saveDetails()">המשך</button></div>`, 68);
