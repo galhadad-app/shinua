@@ -791,7 +791,7 @@
         days += `<button class="day ${disabled?'disabled':''} ${state.date===iso?'selected':''}" ${disabled?'disabled':''} onclick="selectDate('${iso}')">${d}</button>`;
       }
       openModal(`
-        <h2>בתאריך?</h2>
+        <h2>בחר תאריך</h2>
         <div class="calendar-head"><button class="navbtn" onclick="moveMonth(1)">‹</button><div class="month-title">${currentMonth.toLocaleDateString('he-IL',{month:'long',year:'numeric'})}</div><button class="navbtn" onclick="moveMonth(-1)">›</button></div>
         <div class="week">${names.map(n=>`<div>${n}</div>`).join('')}</div>
         <div class="days">${days}</div>
