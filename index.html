@@ -479,6 +479,20 @@
       display:grid;
     }
 
+
+.back-link-btn{
+display:block;
+width:100%;
+background:none!important;
+border:0!important;
+box-shadow:none!important;
+color:#7b8794!important;
+font-weight:800;
+font-size:16px;
+margin-top:2px;
+padding:8px 0;
+}
+
 </style>
 </head>
 <body>
@@ -525,6 +539,11 @@
 
   <script>
     const $ = s => document.querySelector(s);
+
+function backButton(stepNum){
+return `<button class="back-link-btn" onclick="openStep(${stepNum})">חזרה</button>`;
+}
+
     const VEHICLE_API_URL = 'https://vehicle-api-81941134785.us-central1.run.app/vehicle';
     const GOOGLE_MAPS_API_KEY = 'AIzaSyCAxMKUWT0raBOsotHR8-dp3zmmrOjqiL8';
     const state = { plate:'', vehicleApproved:false, vehicle:{make:'',model:'',year:'',licenseExpiry:'',licenseValid:false}, address:{city:'',street:'',house:'',formatted:''}, date:'', time:'', name:'', phone:'', notes:'', docs:{license:false,insurance:false,id:false}, payment:'', price:'₪349' };
@@ -643,7 +662,7 @@
           ${hasAddress ? '<div class="hint" style="margin:7px 0 0">יש להשלים מספר בית ידנית.</div>' : '<div class="hint" style="margin:7px 0 0">בחר כתובת מהרשימה או זהה מיקום.</div>'}
         </div>
         <input class="field" id="house" inputmode="numeric" placeholder="מספר בית - חובה" value="${state.address.house}">
-        <button class="btn primary" onclick="saveAddress()">אישור כתובת</button>`;
+        <button class="btn primary" onclick="saveAddress()">אישור כתובת</button>${backButton(1)}`;
     }
     function setAddressLoading(text){
       const box = $('#addressFields');
@@ -796,7 +815,7 @@
         <div class="week">${names.map(n=>`<div>${n}</div>`).join('')}</div>
         <div class="days">${days}</div>
         ${state.date ? `<div style="margin-top:18px;text-align:center;font-weight:800;color:#102033">התאריך שנבחר: ${new Date(state.date).toLocaleDateString('he-IL',{day:'numeric',month:'long',year:'numeric'})}</div>
-        <div class="actions" style="margin-top:14px"><button class="btn primary" onclick="openStep(3)">המשך לבחירת שעה</button></div>` : ''}
+        <div class="actions" style="margin-top:14px"><button class="btn primary" onclick="openStep(3)">המשך לבחירת שעה</button><button class='back-link-btn' onclick='openStep(1)'>חזרה</button></div>` : ''}
         `, 36);
     }
     function moveMonth(delta){ currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth()+delta, 1); renderCalendar(); }
@@ -815,7 +834,7 @@
         </div>
         <div class="time-pick-note">בחירת שעת איסוף מהרשימה</div>
         <div class="time-continue-wrap ${state.time?'show':''}" id="timeContinueWrap">
-          <button class="btn primary" onclick="openStep(4)">המשך</button>
+          <button class="btn primary" onclick="openStep(4)">המשך</button><button class='back-link-btn' onclick='openStep(2)'>חזרה</button>
         </div>`, 52);
     }
     function selectTime(t){
@@ -828,7 +847,7 @@
     }
 
     function detailsStep(){
-      openModal(`<h2>מה הפרטים שלך?</h2><div class="fields"><input class="field" id="fullName" placeholder="שם מלא" autocomplete="name"><input class="field" id="phone" inputmode="tel" placeholder="פלאפון"><textarea class="field" id="notes" placeholder="הערות (לא חובה)"></textarea><button class="btn primary" onclick="saveDetails()">המשך</button></div>`, 68);
+      openModal(`<h2>מה הפרטים שלך?</h2><div class="fields"><input class="field" id="fullName" placeholder="שם מלא" autocomplete="name"><input class="field" id="phone" inputmode="tel" placeholder="פלאפון"><textarea class="field" id="notes" placeholder="הערות (לא חובה)"></textarea><button class="btn primary" onclick="saveDetails()">המשך</button><button class='back-link-btn' onclick='openStep(3)'>חזרה</button></div>`, 68);
     }
     function saveDetails(){
       state.name=$('#fullName').value.trim(); state.phone=$('#phone').value.replace(/\D/g,''); state.notes=$('#notes').value.trim();
@@ -842,7 +861,7 @@
         ${uploadBox('license','רשיון רכב בתוקף')}
         ${uploadBox('insurance','ביטוח חובה בתוקף')}
         ${uploadBox('id','תעודה מזהה')}
-      </div><div class="actions" style="margin-top:12px"><button class="btn primary" onclick="checkDocs()">המשך לסיכום</button></div>`, 82);
+      </div><div class="actions" style="margin-top:12px"><button class="btn primary" onclick="checkDocs()">המשך לסיכום</button><button class='back-link-btn' onclick='openStep(4)'>חזרה</button></div>`, 82);
     }
     function uploadBox(key,label){ return `<label class="upload ${state.docs[key]?'done':''}" id="up-${key}"><input type="file" accept="image/*,.pdf" capture="environment" onchange="markUpload('${key}')"><span class="uicon">${state.docs[key]?'✓':'+'}</span><span><strong>${label}</strong></span></label>`; }
     function markUpload(key){ state.docs[key]=true; const el=$(`#up-${key}`); el.classList.add('done'); el.querySelector('.uicon').textContent='✓';  }
@@ -850,9 +869,9 @@
 
     function addressText(){ return `${state.address.street} ${state.address.house}, ${state.address.city}`; }
     function summaryRows(){ return [ ['מספר רכב',state.plate], ['שם מלא',state.name], ['פלאפון',state.phone], ['כתובת',addressText()], ['תאריך',new Date(state.date).toLocaleDateString('he-IL')], ['שעה',state.time], ['מחיר',state.price] ].map(r=>`<div class="info-row"><span>${r[0]}</span><b>${r[1]}</b></div>`).join(''); }
-    function finalSummary(){ openModal(`<h2>אישור הזמנה</h2><div class="summary-card">${summaryRows()}</div><button class="btn primary" onclick="openStep(7)">אישור ומעבר לתשלום</button>`, 92); }
+    function finalSummary(){ openModal(`<h2>אישור הזמנה</h2><div class="summary-card">${summaryRows()}</div><button class="btn primary" onclick="openStep(7)">אישור ומעבר לתשלום</button><button class='back-link-btn' onclick='openStep(5)'>חזרה</button>`, 92); }
     function paymentStep(){
-      openModal(`<h2>בחירת אמצעי תשלום</h2><div class="payments">${['BIT','אשראי','מזומן'].map(p=>`<button class="pay" onclick="finishOrder('${p}')">${p}</button>`).join('')}</div>`, 100);
+      openModal(`<h2>בחירת אמצעי תשלום</h2><div class="payments">${['BIT','אשראי','מזומן'].map(p=>`<button class="pay" onclick="finishOrder('${p}')">${p}</button>`).join('')}</div><button class='back-link-btn' onclick='openStep(6)'>חזרה</button>`, 100);
     }
     function finishOrder(payment){ state.payment = payment; closeModal(); $('#home').classList.add('hidden'); $('#successSummary').innerHTML = `<div class="summary-card">${[['תאריך',new Date(state.date).toLocaleDateString('he-IL')],['שעה',state.time],['מספר רכב',state.plate],['כתובת איסוף',addressText()],['תשלום',payment]].map(r=>`<div class="info-row"><span>${r[0]}</span><b>${r[1]}</b></div>`).join('')}</div>`; $('#successScreen').classList.add('active'); }
     function restartApp(){ location.reload(); }
