@@ -560,6 +560,7 @@ return `<button class="back-link-btn" onclick="openStep(${stepNum})">חזרה</b
 
     const VEHICLE_API_URL = 'https://vehicle-api-81941134785.us-central1.run.app/vehicle';
     const GOOGLE_MAPS_API_KEY = 'AIzaSyCAxMKUWT0raBOsotHR8-dp3zmmrOjqiL8';
+    const BUSINESS_ID = 'shinua';
     const state = { plate:'', vehicleApproved:false, vehicle:{make:'',model:'',year:'',licenseExpiry:'',licenseValid:false}, address:{city:'',street:'',house:'',formatted:''}, date:'', time:'', name:'', phone:'', notes:'', docs:{license:false,insurance:false,id:false}, payment:'', price:'₪349' };
     let step = 0, currentMonth = new Date();
     const modal = $('#modalShell'), content = $('#modalContent'), bar = $('#bar'), plateInput = $('#plateInput'), bookBtn = $('#bookBtn');
@@ -897,6 +898,7 @@ return `<button class="back-link-btn" onclick="openStep(${stepNum})">חזרה</b
     function buildOrderPayload(){
       const now = new Date();
       return {
+        businessId: BUSINESS_ID,
         status: 'new',
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         createdAtMs: now.getTime(),
@@ -935,7 +937,9 @@ return `<button class="back-link-btn" onclick="openStep(${stepNum})">חזרה</b
 
     async function hasDuplicateOrder(db){
       const plateDigits = digitsOnly(state.plate);
-      const snap = await db.collection('orders')
+      const snap = await db.collection('businesses')
+        .doc(BUSINESS_ID)
+        .collection('orders')
         .where('plateDigits','==',plateDigits)
         .limit(25)
         .get();
@@ -972,7 +976,10 @@ return `<button class="back-link-btn" onclick="openStep(${stepNum})">חזרה</b
           return;
         }
 
-        const docRef = await db.collection('orders').add(buildOrderPayload());
+        const docRef = await db.collection('businesses')
+          .doc(BUSINESS_ID)
+          .collection('orders')
+          .add(buildOrderPayload());
         state.orderId = docRef.id;
         showSuccess(payment);
       }catch(err){
