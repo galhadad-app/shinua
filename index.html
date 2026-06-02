@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#eef8fb" />
+  <title>שינוע רכבים לטסט</title>
+  <style>
+    :root{
+      --bg:#07131d;
+      --text:#f8fbff;
+      --muted:rgba(248,251,255,.72);
+      --soft:rgba(255,255,255,.12);
+      --glass:rgba(255,255,255,.13);
+      --glass2:rgba(255,255,255,.2);
+      --line:rgba(255,255,255,.18);
+      --accent:#7ce8d4;
+      --accent2:#9ec8ff;
+      --gold:#d9c18b;
+      --danger:#ff837f;
+      --ok:#4fe59b;
+      --shadow:0 24px 80px rgba(0,0,0,.36);
+      --radius:28px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--text);touch-action:manipulation}
+    button,input,textarea{font:inherit}
+    button{border:0;cursor:pointer;color:inherit}
+    .app{height:100%;position:relative;overflow:hidden;background:radial-gradient(circle at 20% 0%,rgba(124,232,212,.28),transparent 33%),radial-gradient(circle at 85% 15%,rgba(158,200,255,.22),transparent 30%),#07131d}
+    .video-bg{position:absolute;inset:0;background:url('background.jpg') center center/cover no-repeat;animation:none;filter:none}
+    .video-bg:after{display:none}
+    @keyframes cinema{0%{transform:none}100%{transform:none}}
+    .home{height:100%;position:relative;z-index:1;display:flex;align-items:center;justify-content:center;padding:26px;text-align:center}
+    .home-inner{width:min(100%,430px);animation:floatIn .8s ease both}
+    @keyframes floatIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+    .brand-pill{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.09);backdrop-filter:blur(18px);color:rgba(255,255,255,.82);font-size:13px;margin-bottom:18px}
+    .brand-dot{width:8px;height:8px;border-radius:99px;background:var(--accent);box-shadow:0 0 18px var(--accent)}
+    h1{font-size:clamp(35px,9vw,48px);line-height:1.05;margin:0 0 10px;font-weight:850;letter-spacing:-.04em;text-shadow:0 8px 34px rgba(0,0,0,.45)}
+    .subtitle{margin:0 auto 30px;color:var(--muted);font-size:17px;line-height:1.5;max-width:330px}
+    .plate-wrap{background:linear-gradient(145deg,rgba(255,255,255,.2),rgba(255,255,255,.08));border:1px solid var(--line);border-radius:26px;padding:14px;box-shadow:var(--shadow);backdrop-filter:blur(22px)}
+    .plate-label{font-size:13px;color:rgba(255,255,255,.72);margin-bottom:10px;text-align:right;padding-inline:6px}
+    .plate{display:flex;align-items:center;direction:ltr;height:66px;border-radius:18px;background:linear-gradient(#fff8d8,#f4eaa9);box-shadow:inset 0 0 0 3px rgba(13,35,55,.86),0 18px 42px rgba(0,0,0,.22);overflow:hidden}
+    .il{height:100%;width:44px;background:#1456ad;color:#fff;display:flex;align-items:center;justify-content:center;flex-direction:column;font-weight:800;line-height:1;font-size:13px;letter-spacing:.02em;flex:0 0 44px}
+    .il small{font-size:8px;margin-top:3px;opacity:.9}
+    #plateInput{min-width:0;width:100%;height:100%;border:0;background:transparent;text-align:center;font-size:clamp(30px,8vw,40px);font-weight:900;letter-spacing:.04em;color:#111;outline:0;padding:0 10px;text-transform:uppercase;direction:ltr}
+    .cta{width:100%;height:58px;margin-top:18px;border-radius:18px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#03151d;font-weight:850;font-size:18px;box-shadow:0 18px 50px rgba(124,232,212,.24);transform:translateY(10px);opacity:0;pointer-events:none;transition:.35s ease}
+    .cta.show{transform:translateY(0);opacity:1;pointer-events:auto}
+
+    .cta:disabled,.btn:disabled{opacity:.72;cursor:wait;filter:saturate(.85);}
+    .modal-shell{position:absolute;inset:0;z-index:10;display:none;align-items:flex-end;justify-content:center;background:rgba(2,7,13,.42);backdrop-filter:blur(14px);padding:14px}
+    .modal-shell.active{display:flex;animation:fade .25s ease both}
+    @keyframes fade{from{opacity:0}to{opacity:1}}
+    .modal{width:min(100%,460px);max-height:88vh;overflow:auto;border-radius:32px;background:linear-gradient(150deg,rgba(255,255,255,.18),rgba(255,255,255,.08));border:1px solid rgba(255,255,255,.22);box-shadow:var(--shadow);backdrop-filter:blur(26px);padding:20px;animation:sheet .38s cubic-bezier(.2,.9,.2,1) both;color:#fff}
+    @keyframes sheet{from{opacity:0;transform:translateY(34px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .progress{height:5px;background:rgba(255,255,255,.13);border-radius:99px;overflow:hidden;margin-bottom:18px}.bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:.4s ease}
+    .modal h2{font-size:25px;margin:0 0 16px;letter-spacing:-.03em;text-align:center}.hint{margin:-5px 0 17px;color:rgba(255,255,255,.68);font-size:14px;line-height:1.45;text-align:center}
+    .vehicle-card,.summary-card{border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.1);border-radius:24px;padding:16px;margin-bottom:16px}.car-icon{width:58px;height:58px;border-radius:20px;display:grid;place-items:center;background:linear-gradient(135deg,rgba(124,232,212,.24),rgba(158,200,255,.18));font-size:30px;margin-bottom:12px}
+    .grid{display:grid;gap:10px}.info-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.09)}.info-row:last-child{border-bottom:0}.info-row span{color:rgba(255,255,255,.64);font-size:14px}.info-row b{font-size:15px;text-align:left;direction:rtl}
+    .actions{display:grid;gap:10px}.btn{height:56px;border-radius:18px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.16);font-weight:800;font-size:16px;transition:.2s ease}.btn:active{transform:scale(.98)}.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04141d}.btn.danger{background:rgba(255,131,127,.14);border-color:rgba(255,131,127,.32);color:#ffd5d3}.btn.active{outline:2px solid rgba(124,232,212,.75);background:rgba(124,232,212,.18)}
+    .option{display:flex;align-items:center;gap:13px;min-height:72px;padding:14px;border-radius:22px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);text-align:right}.option i{width:42px;height:42px;border-radius:16px;display:grid;place-items:center;background:rgba(255,255,255,.12);font-style:normal;font-size:21px}.option strong{display:block;font-size:16px}.option small{display:block;color:rgba(255,255,255,.62);margin-top:4px}
+    .fields{display:grid;gap:10px;margin:12px 0}.field{height:54px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.1);border-radius:17px;color:#fff;outline:0;padding:0 15px;text-align:right}.field::placeholder,textarea::placeholder{color:rgba(255,255,255,.48)}textarea.field{height:84px;padding-top:14px;resize:none}
+    .calendar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.month-title{font-weight:850}.navbtn{width:40px;height:40px;border-radius:14px;background:rgba(255,255,255,.12)}.week,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;text-align:center}.week{color:rgba(255,255,255,.55);font-size:12px;margin-bottom:8px}.day{
+      width:44px;
+      height:44px;
+      margin:auto;
+      border-radius:999px;
+      background:transparent;
+      display:grid;
+      place-items:center;
+      font-weight:850;
+      border:0;
+      box-shadow:none;
+    }
+    .day.disabled{opacity:.25}
+    .day.selected{
+      background:#102033;
+      color:#fff;
+    }
+    .slots,.payments{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.slot,.pay{height:58px;border-radius:18px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);font-weight:850}.slot.active,.pay.active{background:linear-gradient(135deg,rgba(124,232,212,.3),rgba(158,200,255,.22));border-color:rgba(124,232,212,.7)}
+    .upload{position:relative;display:flex;align-items:center;gap:13px;min-height:74px;padding:14px;border-radius:21px;background:rgba(255,255,255,.1);border:1px dashed rgba(255,255,255,.28);overflow:hidden}.upload input{position:absolute;inset:0;opacity:0}.upload .uicon{width:44px;height:44px;border-radius:16px;background:rgba(255,255,255,.12);display:grid;place-items:center}.upload.done{border-style:solid;border-color:rgba(79,229,155,.65);background:rgba(79,229,155,.13)}.upload.done .uicon{background:rgba(79,229,155,.22)}.upload small{color:rgba(255,255,255,.58)}
+    .success-screen{position:absolute;inset:0;z-index:20;display:none;align-items:center;justify-content:center;padding:24px;text-align:center;background:radial-gradient(circle at 50% 18%,rgba(79,229,155,.24),transparent 35%),linear-gradient(180deg,#07131d,#091927)}.success-screen.active{display:flex}.check{width:94px;height:94px;border-radius:50%;margin:0 auto 24px;display:grid;place-items:center;background:rgba(79,229,155,.16);border:1px solid rgba(79,229,155,.45);font-size:46px;color:var(--ok);box-shadow:0 0 48px rgba(79,229,155,.2);animation:pulse 2s ease infinite}@keyframes pulse{50%{transform:scale(1.05);box-shadow:0 0 70px rgba(79,229,155,.32)}}
+    .success-screen h2{font-size:31px;margin:0 0 10px}.success-screen p{color:rgba(255,255,255,.7);margin:0 0 22px}.success-card{width:min(100%,420px);margin:auto}.hidden{display:none!important}
+
+
+    /* License plate imported from clean plate file */
+    .home-inner{
+      width:min(92vw,560px) !important;
+    }
+    .plate-wrap{
+      width:min(92vw,560px) !important;
+      background:transparent !important;
+      border:none !important;
+      box-shadow:none !important;
+      padding:0 !important;
+      display:flex !important;
+      align-items:center !important;
+      justify-content:center !important;
+      gap:12px !important;
+      position:relative !important;
+    }
+    .plate-wrap:before{display:none !important;
+      content:"" !important;
+      position:absolute !important;
+      inset:-10px !important;
+      padding:0 !important;
+      border-radius:24px !important;
+      border:3px solid #2c3036 !important;
+      background:transparent !important;
+      opacity:1 !important;
+      pointer-events:none !important;
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.18),
+        0 6px 12px rgba(0,0,0,.28) !important;
+    }
+    .plate-wrap:after{
+      content:"IL";
+      position:relative;
+      width:58px;
+      height:58px;
+      border-radius:18px;
+      background:linear-gradient(180deg,#1b78df 0%,#0956bd 100%);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      font-weight:900;
+      font-size:20px;
+      line-height:1;
+      letter-spacing:.2px;
+      box-shadow:inset -2px 0 0 rgba(0,0,0,.16), inset 0 0 0 1px rgba(255,255,255,.14);
+      z-index:2;
+    }
+    .plate-label{display:none !important;}
+    .plate-input,
+    #plateInput.plate-input{
+      position:relative !important;
+      width:330px !important;
+      height:74px !important;
+      left:auto !important;
+      right:auto !important;
+      background:linear-gradient(180deg,#f8e6b0 0%,#efcf78 100%) !important;
+      border-radius:24px !important;
+      box-shadow:0 22px 40px rgba(0,0,0,.16),0 6px 0 rgba(215,185,96,.85),inset 0 1px 0 rgba(255,255,255,.55) !important;
+      color:#111 !important;
+      font-size:42px !important;
+      font-weight:900 !important;
+      line-height:74px !important;
+      text-align:center !important;
+      border:0 !important;
+      outline:0 !important;
+    }
+    .plate-input::placeholder,
+    #plateInput.plate-input::placeholder{
+      color:rgba(0,0,0,.88) !important;
+      opacity:1 !important;
+      font-size:0.65em !important;
+      font-weight:700 !important;
+      letter-spacing:0 !important;
+      transform:translateY(-4px) !important;
+    }
+    .plate-input:focus,
+    #plateInput.plate-input:focus{
+      outline:none !important;
+      filter:drop-shadow(0 0 10px rgba(255,216,74,.35));
+    }
+    @media (max-width:390px){
+      .plate-wrap{width:96vw !important;height:104px !important;border-width:4px !important;}
+      .plate-wrap:after{width:58px;font-size:10.5px;}
+      .plate-input,#plateInput.plate-input{left:66px !important;right:8px !important;top:5px !important;bottom:5px !important;font-size:clamp(39px,11.2vw,46px) !important;letter-spacing:-.8px !important;line-height:94px !important;}
+    }
+
+
+    /* Vehicle confirmation popup - simple clean details */
+    .modal-shell{align-items:center !important;}
+    .modal{max-height:92vh;}
+    .vehicle-card.premium-vehicle{
+      position:relative;
+      overflow:hidden;
+      padding:18px !important;
+      border-radius:28px !important;
+      background:
+        radial-gradient(circle at 88% 12%, rgba(124,232,212,.12), transparent 34%),
+        linear-gradient(150deg, rgba(255,255,255,.13), rgba(255,255,255,.065)) !important;
+      border:1px solid rgba(255,255,255,.18) !important;
+      box-shadow:0 20px 58px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.12) !important;
+    }
+    .mini-plate{
+      position:relative;
+      direction:ltr;
+      height:48px;
+      border-radius:12px;
+      border:3px solid #11151a;
+      background:linear-gradient(180deg,#ffd84a 0%,#f5bd22 55%,#dfa011 100%);
+      color:#08090b;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:0 12px 0 46px;
+      margin:0 0 14px;
+      font-family:Arial Black, Impact, system-ui, sans-serif;
+      font-size:23px;
+      font-weight:950;
+      letter-spacing:.02em;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.28), 0 12px 24px rgba(0,0,0,.17);
+    }
+    .mini-plate:before{
+      content:"🇮🇱";
+      position:absolute;
+      left:0;
+      top:0;
+      bottom:0;
+      width:36px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      background:linear-gradient(180deg,#1b78df 0%,#0956bd 100%);
+      color:#fff;
+      font-size:18px;
+      line-height:1;
+      border-radius:8px 0 0 8px;
+      font-family:system-ui, sans-serif;
+      letter-spacing:0;
+    }
+    .vehicle-minimal-details{
+      margin:12px 0 0;
+      text-align:center;
+    }
+    .vehicle-main-line{
+      font-size:23px;
+      line-height:1.18;
+      font-weight:900;
+      letter-spacing:-.035em;
+      color:#fff;
+    }
+    .vehicle-model-line{
+      font-size:28px;
+      line-height:1.14;
+      font-weight:950;
+      letter-spacing:.01em;
+      color:#102033;
+      direction:ltr;
+      font-family:Arial Black, Impact, system-ui, sans-serif;
+    }
+    .vehicle-make-year-line{
+      margin-top:8px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      color:rgba(16,32,51,.72);
+      font-size:16px;
+      font-weight:800;
+      line-height:1.25;
+      flex-wrap:wrap;
+    }
+    .vehicle-make-year-line .dot{
+      color:rgba(16,32,51,.5);
+      font-weight:900;
+    }
+
+    .vehicle-license-line{
+      margin:8px auto 0;
+      color:rgba(255,255,255,.66);
+      font-size:13px;
+      font-weight:700;
+      text-align:center;
+      line-height:1.35;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+    .vehicle-license-date{
+      direction:ltr;
+      font-weight:900;
+      letter-spacing:.01em;
+    }
+    .vehicle-license-date.valid{color:#68f0b5;}
+    .vehicle-license-date.invalid{color:#ff8a91;}
+    @media (max-width:390px){
+      .mini-plate{font-size:21px;height:46px;}
+      .vehicle-main-line{font-size:21px;}
+      .vehicle-note{font-size:11.5px;}
+    }
+
+  
+.home-icons{
+  position:absolute;
+  bottom:-80px;
+  left:50%;
+  transform:translateX(-50%);
+  width:min(92vw,700px);
+  display:flex;
+  justify-content:center;
+  align-items:flex-end;
+  z-index:2;
+}
+.home-icons img{
+  width:min(92vw,700px);
+  height:auto;
+  display:block;
+}
+
+
+    /* Day mode only override */
+    :root{
+      --bg:#eef8fb;
+      --text:#102033;
+      --muted:rgba(16,32,51,.68);
+      --soft:rgba(16,32,51,.08);
+      --glass:rgba(255,255,255,.72);
+      --glass2:rgba(255,255,255,.9);
+      --line:rgba(16,32,51,.13);
+      --accent:#21c7b1;
+      --accent2:#69aef7;
+      --gold:#c7a14f;
+      --danger:#d94e4e;
+      --ok:#19a96c;
+      --shadow:0 24px 70px rgba(30,65,90,.18);
+    }
+    html,body{background:#eef8fb;color:var(--text);}
+    .app{
+      background:
+        radial-gradient(circle at 18% 0%, rgba(33,199,177,.22), transparent 34%),
+        radial-gradient(circle at 84% 12%, rgba(105,174,247,.20), transparent 32%),
+        linear-gradient(180deg,#f7fcff 0%,#eaf7f9 100%) !important;
+      color:var(--text) !important;
+    }
+    .video-bg{background:url('background.jpg') center center/cover no-repeat !important;filter:none !important;opacity:1 !important;}
+    .video-bg:after{display:none !important;}
+    .brand-pill{
+      background:rgba(255,255,255,.74) !important;
+      border-color:rgba(16,32,51,.14) !important;
+      color:rgba(16,32,51,.76) !important;
+      box-shadow:0 12px 34px rgba(30,65,90,.10);
+    }
+    h1{color:#102033 !important;text-shadow:0 8px 28px rgba(255,255,255,.78),0 10px 34px rgba(30,65,90,.10) !important;}
+    .subtitle{color:rgba(16,32,51,.68) !important;}
+    .cta,.btn.primary,.day.selected{
+      background:linear-gradient(135deg,var(--accent),var(--accent2)) !important;
+      color:#ffffff !important;
+      box-shadow:0 18px 44px rgba(33,199,177,.22) !important;
+    }
+    .modal-shell{background:rgba(238,248,251,.52) !important;backdrop-filter:blur(14px) !important;}
+    .modal{
+      background:linear-gradient(150deg,rgba(255,255,255,.96),rgba(244,251,253,.90)) !important;
+      border:1px solid rgba(16,32,51,.12) !important;
+      color:#102033 !important;
+      box-shadow:0 28px 80px rgba(30,65,90,.22) !important;
+    }
+    .progress{background:rgba(16,32,51,.08) !important;}
+    .hint{color:rgba(16,32,51,.62) !important;}
+    .vehicle-card,.summary-card,.option,.field,.slot,.pay,.upload,.btn{
+      background:rgba(255,255,255,.78) !important;
+      border-color:rgba(16,32,51,.12) !important;
+      color:#102033 !important;
+      box-shadow:0 10px 28px rgba(30,65,90,.08);
+    }
+    .vehicle-card.premium-vehicle{
+      background:
+        radial-gradient(circle at 88% 12%, rgba(33,199,177,.12), transparent 34%),
+        linear-gradient(150deg, rgba(255,255,255,.95), rgba(244,251,253,.88)) !important;
+      border-color:rgba(16,32,51,.12) !important;
+      box-shadow:0 20px 58px rgba(30,65,90,.14), inset 0 1px 0 rgba(255,255,255,.72) !important;
+    }
+    .vehicle-main-line{color:#102033 !important;}
+    .vehicle-license-line,.info-row span,.option small,.upload small{color:rgba(16,32,51,.62) !important;}
+    .info-row{border-bottom-color:rgba(16,32,51,.08) !important;}
+    .field::placeholder,textarea::placeholder{color:rgba(16,32,51,.42) !important;}
+    .option i,.upload .uicon,.car-icon{background:rgba(33,199,177,.10) !important;color:#102033 !important;}
+    .week{color:rgba(16,32,51,.48) !important;}
+    .day{background:rgba(255,255,255,.82) !important;color:#102033 !important;border:1px solid rgba(16,32,51,.08);}
+    .day.selected{color:#fff !important;}
+    .slot.active,.pay.active,.btn.active{background:rgba(33,199,177,.14) !important;border-color:rgba(33,199,177,.55) !important;}
+    .btn.danger{background:rgba(217,78,78,.10) !important;border-color:rgba(217,78,78,.24) !important;color:#b73535 !important;}
+    .upload.done{border-color:rgba(25,169,108,.52) !important;background:rgba(25,169,108,.10) !important;}
+    .success-screen{
+      background:radial-gradient(circle at 50% 18%,rgba(25,169,108,.17),transparent 35%),linear-gradient(180deg,#f7fcff,#eaf7f9) !important;
+      color:#102033 !important;
+    }
+    .success-screen p{color:rgba(16,32,51,.64) !important;}
+    .check{background:rgba(25,169,108,.12) !important;border-color:rgba(25,169,108,.35) !important;color:var(--ok) !important;}
+
+    .pac-container{z-index:99999 !important;direction:rtl;text-align:right;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;}
+    .pac-item{text-align:right;padding:9px 12px;}
+
+
+.logo-top{
+  position:absolute;
+  top:20px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:50;
+  display:flex;
+  justify-content:center;
+}
+.logo-top img{
+  max-width:320px;
+  width:100%;
+  height:auto;
+  display:block;
+}
+.logo-spacer{
+  display:flex;
+  justify-content:center;
+  margin:0 auto 18px;
+  visibility:hidden;
+  pointer-events:none;
+}
+.logo-spacer img{
+  max-width:180px;
+  width:100%;
+  height:auto;
+  display:block;
+}
+
+
+    .inline-address-search{display:none;width:100%;margin-top:8px;border:0;background:transparent;color:#102033;outline:0;font-weight:700;font-size:15px;text-align:right;padding:0;}
+    .inline-address-search::placeholder{color:rgba(16,32,51,.42);}
+    .address-search-option.searching .inline-address-search{display:block;}
+    .address-search-option.searching strong{display:none;}
+
+    /* Compact time tag picker */
+    .time-date-label{
+      margin:-8px 0 22px;
+      text-align:center;
+      color:rgba(16,32,51,.62);
+      font-size:16px;
+      font-weight:800;
+      line-height:1.3;
+    }
+    .time-tags{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:12px;
+      margin:0 auto 24px;
+      max-width:360px;
+      direction:ltr;
+    }
+    .time-tag{
+      min-width:108px;
+      height:52px;
+      border-radius:999px;
+      border:1px solid rgba(16,32,51,.12);
+      background:rgba(255,255,255,.86);
+      color:#102033;
+      font-size:21px;
+      font-weight:950;
+      direction:ltr;
+      box-shadow:0 10px 26px rgba(30,65,90,.08);
+      cursor:pointer;
+      transition:.18s ease;
+    }
+    .time-tag:active{transform:scale(.96);}
+    .time-tag.active{
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      color:#fff;
+      border-color:transparent;
+      box-shadow:0 16px 38px rgba(33,199,177,.24);
+    }
+    .time-pick-note{
+      margin:0 0 24px;
+      text-align:center;
+      color:rgba(16,32,51,.58);
+      font-size:16px;
+      font-weight:800;
+    }
+    .time-continue-wrap{
+      margin-top:6px;
+      display:none;
+    }
+    .time-continue-wrap.show{
+      display:grid;
+    }
+
+
+.back-link-btn{
+display:block;
+width:100%;
+background:none!important;
+border:0!important;
+box-shadow:none!important;
+color:#7b8794!important;
+font-weight:800;
+font-size:16px;
+margin-top:2px;
+padding:8px 0;
+}
+
+/* Keep plate area visually centered after moving logo to top */
+.home-inner{
+  margin-top:220px !important;
+}
+
+</style>
+
+
+  <!-- Firebase Hosting SDKs: works automatically when uploaded to Firebase Hosting -->
+  <script src="/__/firebase/10.12.5/firebase-app-compat.js"></script>
+  <script src="/__/firebase/10.12.5/firebase-firestore-compat.js"></script>
+  <script src="/__/firebase/init.js"></script>
+
+</head>
+<body>
+  <main class="app">
+    <div class="video-bg" aria-hidden="true"></div>
+    <section class="home" id="home">
+      <div class="logo-top">
+        <img src="logo.png" alt="לוגו">
+      </div>
+      <div class="home-inner">
+        <div class="logo-spacer" aria-hidden="true">
+          <img src="logo.png" alt="">
+        </div>
+        <div class="plate-wrap">
+          <div class="plate-label">הזן מספר רכב</div>
+          <input id="plateInput" class="plate-input" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="הקלד מספר רכב" />
+        </div>
+        <button class="cta" id="bookBtn">הזמן שינוע</button>
+      </div>
+    </section>
+
+<div class="home-icons">
+  <img src="icons.png" alt="אייקונים">
+</div>
+
+
+    <section class="modal-shell" id="modalShell" role="dialog" aria-modal="true">
+      <div class="modal">
+        <div class="progress"><div class="bar" id="bar"></div></div>
+        <div id="modalContent"></div>
+      </div>
+    </section>
+
+    <section class="success-screen" id="successScreen">
+      <div class="success-card">
+        <div class="check">✓</div>
+        <h2>ההזמנה התקבלה בהצלחה</h2>
+        <p>נהג ייצור איתך קשר לפני האיסוף</p>
+        <div class="summary-card" id="successSummary"></div>
+        <div class="actions">
+          <button class="btn primary" onclick="restartApp()">חזרה למסך הראשי</button>
+          <button class="btn" onclick="location.href='tel:0500000000'">צור קשר</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const $ = s => document.querySelector(s);
+
+function backButton(stepNum){
+return `<button class="back-link-btn" onclick="openStep(${stepNum})">חזרה</button>`;
+}
+
+    const VEHICLE_API_URL = 'https://vehicle-api-81941134785.us-central1.run.app/vehicle';
+    const GOOGLE_MAPS_API_KEY = 'AIzaSyCAxMKUWT0raBOsotHR8-dp3zmmrOjqiL8';
+    const state = { plate:'', vehicleApproved:false, vehicle:{make:'',model:'',year:'',licenseExpiry:'',licenseValid:false}, address:{city:'',street:'',house:'',formatted:''}, date:'', time:'', name:'', phone:'', notes:'', docs:{license:false,insurance:false,id:false}, payment:'', price:'₪349' };
+    let step = 0, currentMonth = new Date();
+    const modal = $('#modalShell'), content = $('#modalContent'), bar = $('#bar'), plateInput = $('#plateInput'), bookBtn = $('#bookBtn');
+
+    function digitsOnly(v){ return (v || '').replace(/\D/g,'').slice(0,8); }
+    function formatPlate(d){
+      if(d.length <= 7){ return [d.slice(0,2), d.slice(2,5), d.slice(5,7)].filter(Boolean).join('-'); }
+      return [d.slice(0,3), d.slice(3,5), d.slice(5,8)].filter(Boolean).join('-');
+    }
+    function validPlate(d){ return d.length === 7 || d.length === 8; }
+    plateInput.addEventListener('input', e => {
+      const d = digitsOnly(e.target.value);
+      e.target.value = formatPlate(d);
+      state.plate = e.target.value;
+      state.vehicleApproved = false;
+      bookBtn.textContent = 'המשך';
+
+      if(validPlate(d)) {
+        bookBtn.classList.add('show');
+      } else {
+        bookBtn.classList.remove('show');
+      }
+    });
+    bookBtn.onclick = async () => {
+      if(state.vehicleApproved) return openStep(1);
+      const d = digitsOnly(plateInput.value);
+      if(!validPlate(d)) return;
+      state.plate = plateInput.value;
+      await loadVehicleData(d);
+    };
+
+    async function loadVehicleData(plateDigits){
+      const originalText = 'המשך';
+      bookBtn.disabled = true;
+      bookBtn.textContent = 'מזהה את הרכב...';
+
+      try{
+        const response = await fetch(`${VEHICLE_API_URL}?plate=${encodeURIComponent(plateDigits)}`);
+        const data = await response.json();
+
+        if(!response.ok || !data.ok){
+          throw new Error(data.error || 'vehicle_not_found');
+        }
+
+        state.vehicle = {
+          make: data.make || '',
+          model: data.model || '',
+          year: data.year || '',
+          licenseExpiry: data.licenseExpiry || '',
+          licenseValid: Boolean(data.licenseValid)
+        };
+
+        showVehicleConfirm();
+      }catch(err){
+        alert('לא נמצאו פרטי רכב למספר שהוזן. נא לבדוק את המספר ולנסות שוב.');
+      }finally{
+        bookBtn.disabled = false;
+        bookBtn.textContent = originalText;
+      }
+    }
+
+    function setProgress(n){ bar.style.width = Math.max(8, Math.min(100, n)) + '%'; }
+    function openModal(html, progress){ content.innerHTML = html; setProgress(progress); modal.classList.add('active'); }
+    function closeModal(){ modal.classList.remove('active'); }
+
+    function showVehicleConfirm(){
+      openModal(`
+        <h2>הרכב זוהה בהצלחה</h2>
+        <p class="hint">אשר את פרטי הרכב ונמשיך לבחירת כתובת איסוף</p>
+        <div class="vehicle-card premium-vehicle">
+          <div class="mini-plate">${state.plate}</div>
+
+          <div class="vehicle-minimal-details">
+            <div class="vehicle-model-line">${state.vehicle.model || ''}</div>
+            <div class="vehicle-make-year-line"><span>${state.vehicle.make || ''}</span><span class="dot">•</span><span>שנת ${state.vehicle.year || ''}</span></div>
+            <div class="vehicle-license-line">
+              <span>תוקף רישיון:</span>
+              <span class="vehicle-license-date ${state.vehicle.licenseValid ? 'valid' : 'invalid'}">${state.vehicle.licenseExpiry || 'לא נמצא'}</span>
+            </div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn primary" onclick="approveVehicle()">המשך</button>
+          <button class="btn danger" onclick="wrongPlate()">מספר שגוי</button>
+        </div>`, 10);
+    }
+    function approveVehicle(){ closeModal(); state.vehicleApproved = true; bookBtn.classList.remove('show'); openStep(1); }
+    function wrongPlate(){ closeModal(); state.vehicleApproved = false; bookBtn.textContent = 'המשך'; plateInput.focus(); plateInput.select(); bookBtn.classList.remove('show'); }
+
+    function openStep(n){ step = n; if(n===1) pickupStep(); if(n===2) dateStep(); if(n===3) timeStep(); if(n===4) detailsStep(); if(n===5) docsStep(); if(n===6) finalSummary(); if(n===7) paymentStep(); }
+    function pickupStep(){
+      openModal(`
+        <h2>כתובת לאיסוף הרכב</h2>
+        <div class="grid" id="pickupOptions">
+          <button class="option" onclick="detectLocation()"><i>📍</i><span><strong>זהה את המיקום שלי</strong></span></button>
+          <div class="option address-search-option" onclick="focusAddressSearch()"><i>⌕</i><span><strong>חפש כתובת</strong><input class="inline-address-search" id="addressSearch" placeholder="חפש כתובת" autocomplete="off" onclick="event.stopPropagation()"></span></div>
+        </div>
+        <div class="fields" id="addressFields"></div>`, 20);
+      initGooglePlacesAutocomplete();
+    }
+    function selectedAddressText(){
+      const city = state.address.city || '';
+      const street = state.address.street || '';
+      const formatted = state.address.formatted || [street, city].filter(Boolean).join(', ');
+      return formatted || 'עדיין לא נבחרה כתובת';
+    }
+
+    function renderAddressFields(withGoogleSearch = false){
+      const hasAddress = Boolean(state.address.city || state.address.street || state.address.formatted);
+      $('#addressFields').innerHTML = `
+        <div class="vehicle-card" style="margin:0;text-align:center">
+          <div class="hint" style="margin:0 0 7px">הכתובת שנבחרה:</div>
+          <strong>${selectedAddressText()}</strong>
+          ${hasAddress ? '<div class="hint" style="margin:7px 0 0">יש להשלים מספר בית ידנית.</div>' : '<div class="hint" style="margin:7px 0 0">בחר כתובת מהרשימה או זהה מיקום.</div>'}
+        </div>
+        <input class="field" id="house" inputmode="numeric" placeholder="מספר בית - חובה" value="${state.address.house}">
+        <button class="btn primary" onclick="saveAddress()">אישור כתובת</button>${backButton(1)}`;
+    }
+    function setAddressLoading(text){
+      const box = $('#addressFields');
+      if(!box) return;
+      box.innerHTML = `
+        <div class="vehicle-card" style="margin:0;text-align:center">
+          <strong>${text}</strong>
+          <div class="hint" style="margin:8px 0 0">לאחר הזיהוי יש להשלים מספר בית ידנית.</div>
+        </div>`;
+    }
+    function getPosition(){
+      return new Promise((resolve,reject)=>{
+        navigator.geolocation.getCurrentPosition(resolve,reject,{ enableHighAccuracy:true, timeout:14000, maximumAge:60000 });
+      });
+    }
+    function locationErrorText(err){
+      if(!err) return 'לא הצלחנו לזהות מיקום. אפשר למלא כתובת ידנית.';
+      if(err.code === 1) return 'לא ניתנה הרשאת מיקום. אפשר לאשר הרשאה בדפדפן או למלא ידנית.';
+      if(err.code === 2) return 'המיקום לא זמין כרגע. אפשר למלא כתובת ידנית.';
+      if(err.code === 3) return 'זיהוי המיקום לקח יותר מדי זמן. אפשר לנסות שוב או למלא ידנית.';
+      return 'לא הצלחנו לזהות מיקום. אפשר למלא כתובת ידנית.';
+    }
+    let googleMapsPromise = null;
+
+    function hasGoogleMapsKey(){
+      return Boolean(GOOGLE_MAPS_API_KEY && GOOGLE_MAPS_API_KEY.trim() && GOOGLE_MAPS_API_KEY !== 'YOUR_GOOGLE_API_KEY');
+    }
+
+    function loadGoogleMaps(){
+      if(window.google && google.maps && google.maps.Geocoder && google.maps.places) return Promise.resolve();
+      if(!hasGoogleMapsKey()) return Promise.reject(new Error('missing_google_maps_key'));
+      if(googleMapsPromise) return googleMapsPromise;
+
+      googleMapsPromise = new Promise((resolve,reject)=>{
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}&libraries=places&language=he&region=IL&v=weekly`;
+        script.async = true;
+        script.defer = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('google_maps_load_failed'));
+        document.head.appendChild(script);
+      });
+
+      return googleMapsPromise;
+    }
+
+    function googleErrorText(err){
+      if(err && err.message === 'missing_google_maps_key') return 'חסר Google API Key בקובץ. יש להדביק מפתח אמיתי במקום YOUR_GOOGLE_API_KEY.';
+      return 'לא הצלחנו להתחבר לשירותי המיקום של Google. אפשר למלא כתובת ידנית.';
+    }
+
+    function getGoogleAddressParts(result){
+      const comps = result?.address_components || [];
+      const get = types => (comps.find(c => types.some(t => c.types.includes(t))) || {}).long_name || '';
+      return {
+        city: get(['locality','postal_town','administrative_area_level_3','administrative_area_level_2','administrative_area_level_1']),
+        street: get(['route']),
+        house: get(['street_number']),
+        formatted: result?.formatted_address || ''
+      };
+    }
+
+    async function reverseGeocode(lat,lng){
+      await loadGoogleMaps();
+      const geocoder = new google.maps.Geocoder();
+      const result = await new Promise((resolve,reject)=>{
+        geocoder.geocode({ location:{ lat, lng }, language:'he', region:'IL' }, (results,status)=>{
+          if(status === 'OK' && results && results[0]) resolve(results[0]); else reject(new Error(status));
+        });
+      });
+      return getGoogleAddressParts(result);
+    }
+
+    async function initGooglePlacesAutocomplete(){
+      const searchInput = $('#addressSearch');
+      if(!searchInput) return;
+      try{
+        await loadGoogleMaps();
+        const autocomplete = new google.maps.places.Autocomplete(searchInput, {
+          componentRestrictions: { country: 'il' },
+          fields: ['address_components','formatted_address','geometry'],
+          types: ['address']
+        });
+
+        autocomplete.addListener('place_changed', () => {
+          const place = autocomplete.getPlace();
+          const parts = getGoogleAddressParts(place);
+          state.address.city = parts.city || state.address.city || '';
+          state.address.street = parts.street || state.address.street || '';
+          state.address.house = parts.house || '';
+          state.address.formatted = parts.formatted || [state.address.street, state.address.city].filter(Boolean).join(', ');
+          renderAddressFields(true);
+          initGooglePlacesAutocomplete();
+          setTimeout(()=>$('#house')?.focus(),80);
+        });
+      }catch(err){
+        alert(googleErrorText(err));
+      }
+    }
+
+    async function detectLocation(){
+      if(!navigator.geolocation){
+        alert('הדפדפן לא תומך בזיהוי מיקום. נא למלא כתובת ידנית.');
+        manualAddress();
+        return;
+      }
+      setAddressLoading('מזהה את המיקום שלך...');
+      try{
+        const pos = await getPosition();
+        setAddressLoading('מצאנו מיקום, ממירים לעיר ורחוב...');
+        const parts = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+        state.address.city = parts.city || '';
+        state.address.street = parts.street || '';
+        state.address.house = '';
+        state.address.formatted = [state.address.street, state.address.city].filter(Boolean).join(', ');
+        renderAddressFields();
+        setTimeout(()=>$('#house')?.focus(),80);
+        if(!state.address.city || !state.address.street){
+          alert('זוהה מיקום, אבל לא הצלחנו להשלים עיר ורחוב בצורה מלאה. נא להשלים ידנית.');
+        }
+      }catch(err){
+        alert(err && (err.message === 'missing_google_maps_key' || err.message === 'google_maps_load_failed') ? googleErrorText(err) : locationErrorText(err));
+        manualAddress();
+      }
+    }
+
+    function focusAddressSearch(){
+      const option = document.querySelector('.address-search-option');
+      const input = $('#addressSearch');
+      if(option) option.classList.add('searching');
+      if(input){ initGooglePlacesAutocomplete(); setTimeout(()=>input.focus(),50); }
+    }
+    function manualAddress(){ state.address.city=''; state.address.street=''; state.address.house=''; state.address.formatted=''; focusAddressSearch(); }
+    function saveAddress(){ state.address.house=$('#house').value.trim(); if(!state.address.city || !state.address.street) return alert('נא לבחור כתובת דרך זיהוי מיקום או חיפוש בגוגל'); if(!state.address.house) return alert('נא למלא מספר בית'); openStep(2); }
+
+    function dateStep(){ renderCalendar(); }
+    function renderCalendar(){
+      const y = currentMonth.getFullYear(), m = currentMonth.getMonth();
+      const first = new Date(y,m,1), last = new Date(y,m+1,0), today = new Date(); today.setHours(0,0,0,0);
+      const names = ['א','ב','ג','ד','ה','ו','ש'];
+      let days = ''.padStart(first.getDay()*6,' ').split('').map(()=>'<div></div>').join('');
+      for(let d=1; d<=last.getDate(); d++){
+        const date = new Date(y,m,d), iso = date.toLocaleDateString('sv-SE');
+        const disabled = date < today || date.getDay() === 6;
+        days += `<button class="day ${disabled?'disabled':''} ${state.date===iso?'selected':''}" ${disabled?'disabled':''} onclick="selectDate('${iso}')">${d}</button>`;
+      }
+      openModal(`
+        <h2>בחר תאריך</h2>
+        <div class="calendar-head"><button class="navbtn" onclick="moveMonth(1)">‹</button><div class="month-title">${currentMonth.toLocaleDateString('he-IL',{month:'long',year:'numeric'})}</div><button class="navbtn" onclick="moveMonth(-1)">›</button></div>
+        <div class="week">${names.map(n=>`<div>${n}</div>`).join('')}</div>
+        <div class="days">${days}</div>
+        ${state.date ? `<div style="margin-top:18px;text-align:center;font-weight:800;color:#102033">התאריך שנבחר: ${new Date(state.date).toLocaleDateString('he-IL',{day:'numeric',month:'long',year:'numeric'})}</div>
+        <div class="actions" style="margin-top:14px"><button class="btn primary" onclick="openStep(3)">המשך לבחירת שעה</button><button class='back-link-btn' onclick='openStep(1)'>חזרה</button></div>` : ''}
+        `, 36);
+    }
+    function moveMonth(delta){ currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth()+delta, 1); renderCalendar(); }
+    function selectDate(iso){ state.date = iso; renderCalendar(); }
+
+    function timeStep(){
+      const times = ['08:00','09:30','11:00','12:30','14:00','15:30'];
+      const selectedDateText = state.date
+        ? new Date(state.date).toLocaleDateString('he-IL',{weekday:'long',day:'numeric',month:'long'})
+        : '';
+      openModal(`
+        <h2>בחירת שעה</h2>
+        <div class="time-date-label">${selectedDateText}</div>
+        <div class="time-tags">
+          ${times.map(t=>`<button class="time-tag ${state.time===t?'active':''}" onclick="selectTime('${t}')">${t}</button>`).join('')}
+        </div>
+        <div class="time-pick-note">בחירת שעת איסוף מהרשימה</div>
+        <div class="time-continue-wrap ${state.time?'show':''}" id="timeContinueWrap">
+          <button class="btn primary" onclick="openStep(4)">המשך</button><button class='back-link-btn' onclick='openStep(2)'>חזרה</button>
+        </div>`, 52);
+    }
+    function selectTime(t){
+      state.time=t;
+      document.querySelectorAll('.time-tag').forEach(btn=>{
+        btn.classList.toggle('active', btn.textContent.trim() === t);
+      });
+      const wrap = document.getElementById('timeContinueWrap');
+      if(wrap) wrap.classList.add('show');
+    }
+
+    function detailsStep(){
+      openModal(`<h2>מה הפרטים שלך?</h2><div class="fields"><input class="field" id="fullName" placeholder="שם מלא" autocomplete="name"><input class="field" id="phone" inputmode="tel" placeholder="פלאפון"><textarea class="field" id="notes" placeholder="הערות (לא חובה)"></textarea><button class="btn primary" onclick="saveDetails()">המשך</button><button class='back-link-btn' onclick='openStep(3)'>חזרה</button></div>`, 68);
+    }
+    function saveDetails(){
+      state.name=$('#fullName').value.trim(); state.phone=$('#phone').value.replace(/\D/g,''); state.notes=$('#notes').value.trim();
+      if(state.name.length<2) return alert('נא למלא שם מלא');
+      if(!/^05\d{8}$/.test(state.phone)) return alert('נא להזין פלאפון ישראלי תקין');
+      openStep(5);
+    }
+
+    function docsStep(){
+      openModal(`<h2>לסיום, נא לצרף מסמכים</h2><p class="hint">לאחר העלאה יוצג רק מצב הצלחה נקי, ללא שם קובץ.</p><div class="grid">
+        ${uploadBox('license','רשיון רכב בתוקף')}
+        ${uploadBox('insurance','ביטוח חובה בתוקף')}
+        ${uploadBox('id','תעודה מזהה')}
+      </div><div class="actions" style="margin-top:12px"><button class="btn primary" onclick="checkDocs()">המשך לסיכום</button><button class='back-link-btn' onclick='openStep(4)'>חזרה</button></div>`, 82);
+    }
+    function uploadBox(key,label){ return `<label class="upload ${state.docs[key]?'done':''}" id="up-${key}"><input type="file" accept="image/*,.pdf" capture="environment" onchange="markUpload('${key}')"><span class="uicon">${state.docs[key]?'✓':'+'}</span><span><strong>${label}</strong></span></label>`; }
+    function markUpload(key){ state.docs[key]=true; const el=$(`#up-${key}`); el.classList.add('done'); el.querySelector('.uicon').textContent='✓';  }
+    function checkDocs(){ if(!state.docs.license||!state.docs.insurance||!state.docs.id) return alert('נא לצרף את כל המסמכים'); openStep(6); }
+
+    function addressText(){ return `${state.address.street} ${state.address.house}, ${state.address.city}`; }
+    function summaryRows(){ return [ ['מספר רכב',state.plate], ['שם מלא',state.name], ['פלאפון',state.phone], ['כתובת',addressText()], ['תאריך',new Date(state.date).toLocaleDateString('he-IL')], ['שעה',state.time], ['מחיר',state.price] ].map(r=>`<div class="info-row"><span>${r[0]}</span><b>${r[1]}</b></div>`).join(''); }
+    function finalSummary(){ openModal(`<h2>אישור הזמנה</h2><div class="summary-card">${summaryRows()}</div><button class="btn primary" onclick="openStep(7)">אישור ומעבר לתשלום</button><button class='back-link-btn' onclick='openStep(5)'>חזרה</button>`, 92); }
+    function paymentStep(){
+      openModal(`<h2>בחירת אמצעי תשלום</h2><div class="payments">${['BIT','אשראי','מזומן'].map(p=>`<button class="pay" onclick="finishOrder('${p}')">${p}</button>`).join('')}</div><button class='back-link-btn' onclick='openStep(6)'>חזרה</button>`, 100);
+    }
+    function getFirestoreDb(){
+      if(!window.firebase || !firebase.apps || !firebase.apps.length || !firebase.firestore){
+        throw new Error('firebase_not_ready');
+      }
+      return firebase.firestore();
+    }
+
+    function buildOrderPayload(){
+      const now = new Date();
+      return {
+        status: 'new',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        createdAtMs: now.getTime(),
+        createdAtIso: now.toISOString(),
+        plate: state.plate,
+        plateDigits: digitsOnly(state.plate),
+        vehicle: {
+          make: state.vehicle.make || '',
+          model: state.vehicle.model || '',
+          year: state.vehicle.year || '',
+          licenseExpiry: state.vehicle.licenseExpiry || '',
+          licenseValid: Boolean(state.vehicle.licenseValid)
+        },
+        customer: {
+          name: state.name || '',
+          phone: state.phone || ''
+        },
+        pickupAddress: {
+          city: state.address.city || '',
+          street: state.address.street || '',
+          house: state.address.house || '',
+          formatted: addressText()
+        },
+        date: state.date || '',
+        time: state.time || '',
+        notes: state.notes || '',
+        docs: {
+          license: Boolean(state.docs.license),
+          insurance: Boolean(state.docs.insurance),
+          id: Boolean(state.docs.id)
+        },
+        payment: state.payment || '',
+        price: state.price || ''
+      };
+    }
+
+    async function hasDuplicateOrder(db){
+      const plateDigits = digitsOnly(state.plate);
+      const snap = await db.collection('orders')
+        .where('plateDigits','==',plateDigits)
+        .limit(25)
+        .get();
+
+      let duplicate = false;
+      snap.forEach(doc => {
+        const order = doc.data() || {};
+        const activeStatuses = ['new','assigned','picked_up','at_test','returned'];
+        if(order.date === state.date && activeStatuses.includes(order.status || 'new')){
+          duplicate = true;
+        }
+      });
+      return duplicate;
+    }
+
+    function showSuccess(payment){
+      closeModal();
+      $('#home').classList.add('hidden');
+      $('#successSummary').innerHTML = `<div class="summary-card">${[['תאריך',new Date(state.date).toLocaleDateString('he-IL')],['שעה',state.time],['מספר רכב',state.plate],['כתובת איסוף',addressText()],['תשלום',payment]].map(r=>`<div class="info-row"><span>${r[0]}</span><b>${r[1]}</b></div>`).join('')}</div>`;
+      $('#successScreen').classList.add('active');
+    }
+
+    async function finishOrder(payment){
+      state.payment = payment;
+      const paymentButtons = document.querySelectorAll('.pay');
+      paymentButtons.forEach(btn => btn.disabled = true);
+
+      try{
+        const db = getFirestoreDb();
+        const duplicate = await hasDuplicateOrder(db);
+        if(duplicate){
+          alert('כבר קיימת הזמנה פעילה לרכב הזה בתאריך שנבחר. נא לבחור תאריך אחר או ליצור קשר.');
+          paymentButtons.forEach(btn => btn.disabled = false);
+          return;
+        }
+
+        const docRef = await db.collection('orders').add(buildOrderPayload());
+        state.orderId = docRef.id;
+        showSuccess(payment);
+      }catch(err){
+        console.error(err);
+        alert('לא הצלחנו לשמור את ההזמנה כרגע. נא לבדוק שהקובץ רץ דרך Firebase Hosting ושה-Firestore פעיל.');
+        paymentButtons.forEach(btn => btn.disabled = false);
+      }
+    }
+    function restartApp(){ location.reload(); }
+  </script>
+</body>
+</html>
